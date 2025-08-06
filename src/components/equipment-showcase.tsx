@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import printer3d from "@/assets/3d-printer.jpg";
 import laserCutter from "@/assets/laser-cutter.jpg";
 import recordingStudio from "@/assets/recording-studio.jpg";
-import cncMachine from "@/assets/cnc-machine.jpg";
+import cncMachine from "@/assets/singer-sewing-machine.jpg";
 
 const equipmentData = [
   {
@@ -21,9 +21,9 @@ const equipmentData = [
     description: "Professional audio recording and editing setup"
   },
   {
-    name: "CNC Machine",
+    name: "Singer Heavy Duty Sewing Machine",
     image: cncMachine,
-    description: "Computer-controlled machining for precise parts"
+    description: "Professional-grade sewing machine for fabric and textile projects"
   }
 ];
 
