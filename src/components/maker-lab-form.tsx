@@ -156,7 +156,11 @@ export function MakerLabForm() {
                 mode="multiple"
                 selected={selectedDates}
                 onSelect={(dates) => setSelectedDates(dates || [])}
-                disabled={(date) => date < new Date()}
+                disabled={(date) => {
+                  const isPastDate = date < new Date();
+                  const isMaxSelected = selectedDates.length >= 3 && !selectedDates.some(d => d.toDateString() === date.toDateString());
+                  return isPastDate || isMaxSelected;
+                }}
                 className="rounded-md border bg-gradient-card shadow-soft"
               />
             </div>
