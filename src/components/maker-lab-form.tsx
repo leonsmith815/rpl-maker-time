@@ -129,7 +129,8 @@ export function MakerLabForm() {
               <Calendar mode="multiple" selected={selectedDates} onSelect={dates => setSelectedDates(dates || [])} disabled={date => {
               const isPastDate = date < new Date();
               const isMaxSelected = selectedDates.length >= 3 && !selectedDates.some(d => d.toDateString() === date.toDateString());
-              return isPastDate || isMaxSelected;
+              const isWeekend = date.getDay() === 0 || date.getDay() === 6; // Sunday (0) or Saturday (6)
+              return isPastDate || isMaxSelected || isWeekend;
             }} className="rounded-md border bg-gradient-card shadow-soft" />
             </div>
           </div>
