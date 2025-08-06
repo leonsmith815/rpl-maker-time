@@ -148,7 +148,7 @@ export function MakerLabForm() {
                 1. Select your preferred dates (maximum 3)
               </Label>
               <p className="text-sm text-muted-foreground mt-1">
-                Click on the calendar to select up to 3 preferred dates. Selected dates: {selectedDates.length}/3
+                Click on the calendar to select up to 3 preferred dates. Earliest appointments are for next week. Selected dates: {selectedDates.length}/3
               </p>
             </div>
             <div className="flex justify-center">
