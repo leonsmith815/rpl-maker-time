@@ -1,5 +1,6 @@
 import { MakerLabForm } from "@/components/maker-lab-form";
 import { HoursCard } from "@/components/hours-card";
+import { EquipmentShowcase } from "@/components/equipment-showcase";
 
 const Index = () => {
   return (
@@ -26,6 +27,9 @@ const Index = () => {
           </p>
         </div>
       </div>
+
+      {/* Equipment Showcase */}
+      <EquipmentShowcase />
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12">

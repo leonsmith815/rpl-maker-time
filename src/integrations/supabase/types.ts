@@ -14,7 +14,108 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      equipment: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_available: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      maker_lab_bookings: {
+        Row: {
+          access_option: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          phone: string | null
+          preferred_date: string
+          selected_dates: string[]
+          selected_equipment: string[]
+          selected_time_slots: string[]
+          status: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          access_option: string
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          phone?: string | null
+          preferred_date: string
+          selected_dates: string[]
+          selected_equipment: string[]
+          selected_time_slots: string[]
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          access_option?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          preferred_date?: string
+          selected_dates?: string[]
+          selected_equipment?: string[]
+          selected_time_slots?: string[]
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      time_slots: {
+        Row: {
+          created_at: string
+          id: string
+          is_available: boolean | null
+          slot_time: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_available?: boolean | null
+          slot_time: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_available?: boolean | null
+          slot_time?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
