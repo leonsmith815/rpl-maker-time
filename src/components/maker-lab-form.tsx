@@ -3,13 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calendar } from "@/components/ui/calendar";
 import { TimeSlotCard } from "@/components/ui/time-slot-card";
 import { EquipmentCard } from "@/components/ui/equipment-card";
-import { AppointmentTypeCard } from "@/components/ui/appointment-type-card";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 
 const timeSlots = [
   "Tuesday 11 AM - 1 PM",
@@ -34,9 +30,7 @@ const equipment = [
 ];
 
 export function MakerLabForm() {
-  const [appointmentType, setAppointmentType] = useState<string>("");
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>([]);
-  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     name: "",
@@ -45,24 +39,6 @@ export function MakerLabForm() {
     phone: ""
   });
   const { toast } = useToast();
-
-  const handleDateSelect = (dates: Date[] | undefined) => {
-    if (!dates) {
-      setSelectedDates([]);
-      return;
-    }
-    
-    if (dates.length > 3) {
-      toast({
-        title: "Maximum 3 dates",
-        description: "Please select only 3 preferred dates.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setSelectedDates(dates);
-  };
 
   const handleTimeSlotSelect = (slot: string) => {
     if (selectedTimeSlots.includes(slot)) {
@@ -89,34 +65,16 @@ export function MakerLabForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!appointmentType) {
+    if (selectedTimeSlots.length !== 3) {
       toast({
-        title: "Please select appointment type",
-        description: "You must choose either Training or Maker Lab Appointment.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (appointmentType === "training" && selectedDates.length !== 3) {
-      toast({
-        title: "Please select 3 dates",
-        description: "You must select exactly 3 preferred dates.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (appointmentType === "maker-lab" && selectedTimeSlots.length !== 3) {
-      toast({
-        title: "Please select 3 time slots", 
+        title: "Please select 3 time slots",
         description: "You must select exactly 3 preferred time slots.",
         variant: "destructive"
       });
       return;
     }
 
-    if (appointmentType === "maker-lab" && selectedEquipment.length === 0) {
+    if (selectedEquipment.length === 0) {
       toast({
         title: "Please select equipment",
         description: "You must select at least one piece of equipment.",
@@ -140,9 +98,7 @@ export function MakerLabForm() {
     });
 
     // Reset form
-    setAppointmentType("");
     setSelectedTimeSlots([]);
-    setSelectedDates([]);
     setSelectedEquipment([]);
     setFormData({ name: "", currentDate: "", email: "", phone: "" });
   };
@@ -150,104 +106,41 @@ export function MakerLabForm() {
   return (
     <Card className="w-full max-w-4xl mx-auto bg-gradient-card shadow-soft">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center">Book Your Appointment</CardTitle>
+        <CardTitle className="text-2xl font-bold text-center">Open Maker Lab Signup</CardTitle>
         <CardDescription className="text-center">
-          Choose your appointment type and preferred time slots
+          Book your time slot and select the equipment you want to use
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Appointment Type Selection */}
+          {/* Time Slots Section */}
           <div className="space-y-4">
-            <Label className="text-lg font-semibold">
-              Select Appointment Type
-            </Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <AppointmentTypeCard
-                title="Training"
-                description="Learn how to use our equipment safely and effectively"
-                isSelected={appointmentType === "training"}
-                onSelect={() => setAppointmentType("training")}
-              />
-              <AppointmentTypeCard
-                title="Maker Lab Appointment" 
-                description="Book time to use equipment for your projects"
-                isSelected={appointmentType === "maker-lab"}
-                onSelect={() => setAppointmentType("maker-lab")}
-              />
+            <div>
+              <Label className="text-lg font-semibold">
+                1. Please select three (3) preferred time slots below
+              </Label>
+              <p className="text-sm text-muted-foreground mt-1">
+                You will be contacted based on availability. Earliest appointments are for next week.
+                Selected: {selectedTimeSlots.length}/3
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {timeSlots.map((slot) => (
+                <TimeSlotCard
+                  key={slot}
+                  time={slot}
+                  isSelected={selectedTimeSlots.includes(slot)}
+                  onSelect={() => handleTimeSlotSelect(slot)}
+                />
+              ))}
             </div>
           </div>
 
-          {/* Date Selection for Training */}
-          {appointmentType === "training" && (
-            <div className="space-y-4">
-              <div>
-                <Label className="text-lg font-semibold">
-                  Select Training Dates (Choose 3)
-                </Label>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Choose 3 preferred dates for your training sessions. We'll contact you based on availability.
-                  Selected: {selectedDates.length}/3
-                </p>
-              </div>
-              <div className="flex justify-center">
-                <Calendar
-                  mode="multiple"
-                  selected={selectedDates}
-                  onSelect={handleDateSelect}
-                  disabled={(date) => date < new Date()}
-                  className={cn("rounded-md border bg-card shadow-soft pointer-events-auto")}
-                />
-              </div>
-              {selectedDates.length > 0 && (
-                <div className="mt-4">
-                  <Label className="text-sm font-medium">Selected Dates:</Label>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {selectedDates.map((date, index) => (
-                      <div
-                        key={index}
-                        className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm border border-primary/20"
-                      >
-                        {format(date, "EEEE, MMM d, yyyy")}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Time Slots Section - Only for Maker Lab */}
-          {appointmentType === "maker-lab" && (
-            <div className="space-y-4">
-              <div>
-                <Label className="text-lg font-semibold">
-                  Select Time Slots (Choose 3)
-                </Label>
-                <p className="text-sm text-muted-foreground mt-1">
-                  You will be contacted based on availability. Earliest appointments are for next week.
-                  Selected: {selectedTimeSlots.length}/3
-                </p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {timeSlots.map((slot) => (
-                  <TimeSlotCard
-                    key={slot}
-                    time={slot}
-                    isSelected={selectedTimeSlots.includes(slot)}
-                    onSelect={() => handleTimeSlotSelect(slot)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Equipment Section - Only show for Maker Lab appointments */}
-          {appointmentType === "maker-lab" && (
-            <div className="space-y-4">
-              <Label className="text-lg font-semibold">
-                Select Equipment You Want to Use
-              </Label>
+          {/* Equipment Section */}
+          <div className="space-y-4">
+            <Label className="text-lg font-semibold">
+              2. Select Equipment you want to use
+            </Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {equipment.map((item) => (
                 <EquipmentCard
@@ -257,15 +150,14 @@ export function MakerLabForm() {
                   onSelect={() => handleEquipmentSelect(item)}
                 />
               ))}
-              </div>
             </div>
-          )}
+          </div>
 
           {/* Contact Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-base font-medium">
-                Name *
+                3. Name *
               </Label>
               <Input
                 id="name"
@@ -279,7 +171,7 @@ export function MakerLabForm() {
 
             <div className="space-y-2">
               <Label htmlFor="currentDate" className="text-base font-medium">
-                Current Date *
+                4. Current Date *
               </Label>
               <Input
                 id="currentDate"
@@ -293,7 +185,7 @@ export function MakerLabForm() {
 
             <div className="space-y-2">
               <Label htmlFor="email" className="text-base font-medium">
-                Email *
+                5. Email *
               </Label>
               <Input
                 id="email"
@@ -307,7 +199,7 @@ export function MakerLabForm() {
 
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-base font-medium">
-                Phone *
+                6. Phone *
               </Label>
               <Input
                 id="phone"
@@ -325,7 +217,7 @@ export function MakerLabForm() {
             className="w-full bg-gradient-hero hover:shadow-glow transition-all duration-300 font-semibold"
             size="lg"
           >
-            Submit {appointmentType === "training" ? "Training" : "Appointment"} Request
+            Submit Booking Request
           </Button>
         </form>
       </CardContent>
