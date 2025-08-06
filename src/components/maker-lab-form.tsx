@@ -7,29 +7,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { TimeSlotCard } from "@/components/ui/time-slot-card";
 import { EquipmentCard } from "@/components/ui/equipment-card";
 import { useToast } from "@/hooks/use-toast";
-
-const timeSlots = [
-  "Tuesday 11 AM - 1 PM",
-  "Tuesday 2 PM - 4 PM", 
-  "Wednesday 11 AM - 1 PM",
-  "Thursday 11 AM - 1 PM",
-  "Thursday 2 PM - 4 PM",
-  "Friday 11 AM - 1 PM",
-  "Friday 2 PM - 4 PM"
-];
-
-const equipment = [
-  "Cricut Make",
-  "Laser Cutter", 
-  "3D Printers",
-  "Embroidery Machine",
-  "Sewing Machines",
-  "Brother Serger",
-  "Direct-to-Film (DTF) Printer",
-  "Media Room (Green Screen)",
-  "Recording Studio (Podcast)"
-];
-
+const timeSlots = ["Tuesday 11 AM - 1 PM", "Tuesday 2 PM - 4 PM", "Wednesday 11 AM - 1 PM", "Thursday 11 AM - 1 PM", "Thursday 2 PM - 4 PM", "Friday 11 AM - 1 PM", "Friday 2 PM - 4 PM"];
+const equipment = ["Cricut Make", "Laser Cutter", "3D Printers", "Embroidery Machine", "Sewing Machines", "Brother Serger", "Direct-to-Film (DTF) Printer", "Media Room (Green Screen)", "Recording Studio (Podcast)"];
 export function MakerLabForm() {
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>([]);
@@ -40,8 +19,9 @@ export function MakerLabForm() {
     email: "",
     phone: ""
   });
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   const handleTimeSlotSelect = (slot: string) => {
     if (selectedTimeSlots.includes(slot)) {
       setSelectedTimeSlots(prev => prev.filter(s => s !== slot));
@@ -55,7 +35,6 @@ export function MakerLabForm() {
       });
     }
   };
-
   const handleEquipmentSelect = (item: string) => {
     if (selectedEquipment.includes(item)) {
       setSelectedEquipment(prev => prev.filter(e => e !== item));
@@ -63,10 +42,8 @@ export function MakerLabForm() {
       setSelectedEquipment(prev => [...prev, item]);
     }
   };
-
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
-    
     if (selectedDates.some(d => d.toDateString() === date.toDateString())) {
       setSelectedDates(prev => prev.filter(d => d.toDateString() !== date.toDateString()));
     } else if (selectedDates.length < 3) {
@@ -79,10 +56,8 @@ export function MakerLabForm() {
       });
     }
   };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (selectedDates.length === 0) {
       toast({
         title: "Please select dates",
@@ -91,7 +66,6 @@ export function MakerLabForm() {
       });
       return;
     }
-
     if (selectedTimeSlots.length !== 3) {
       toast({
         title: "Please select 3 time slots",
@@ -100,7 +74,6 @@ export function MakerLabForm() {
       });
       return;
     }
-
     if (selectedEquipment.length === 0) {
       toast({
         title: "Please select equipment",
@@ -109,7 +82,6 @@ export function MakerLabForm() {
       });
       return;
     }
-
     if (!formData.name || !formData.email || !formData.phone || !formData.currentDate) {
       toast({
         title: "Please fill all fields",
@@ -118,21 +90,23 @@ export function MakerLabForm() {
       });
       return;
     }
-
     toast({
       title: "Booking submitted!",
-      description: "We'll contact you based on availability. Thank you!",
+      description: "We'll contact you based on availability. Thank you!"
     });
 
     // Reset form
     setSelectedDates([]);
     setSelectedTimeSlots([]);
     setSelectedEquipment([]);
-    setFormData({ name: "", currentDate: "", email: "", phone: "" });
+    setFormData({
+      name: "",
+      currentDate: "",
+      email: "",
+      phone: ""
+    });
   };
-
-  return (
-    <Card className="w-full max-w-4xl mx-auto bg-gradient-card shadow-soft">
+  return <Card className="w-full max-w-4xl mx-auto bg-gradient-card shadow-soft">
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-center">Open Maker Lab Signup</CardTitle>
         <CardDescription className="text-center">
@@ -147,22 +121,16 @@ export function MakerLabForm() {
               <Label className="text-lg font-semibold">
                 1. Select your preferred dates (maximum 3)
               </Label>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="mt-1 text-xl font-bold text-center text-slate-950">
                 Click on the calendar to select up to 3 preferred dates. Earliest appointments are for next week. Selected dates: {selectedDates.length}/3
               </p>
             </div>
             <div className="flex justify-center">
-              <Calendar
-                mode="multiple"
-                selected={selectedDates}
-                onSelect={(dates) => setSelectedDates(dates || [])}
-                disabled={(date) => {
-                  const isPastDate = date < new Date();
-                  const isMaxSelected = selectedDates.length >= 3 && !selectedDates.some(d => d.toDateString() === date.toDateString());
-                  return isPastDate || isMaxSelected;
-                }}
-                className="rounded-md border bg-gradient-card shadow-soft"
-              />
+              <Calendar mode="multiple" selected={selectedDates} onSelect={dates => setSelectedDates(dates || [])} disabled={date => {
+              const isPastDate = date < new Date();
+              const isMaxSelected = selectedDates.length >= 3 && !selectedDates.some(d => d.toDateString() === date.toDateString());
+              return isPastDate || isMaxSelected;
+            }} className="rounded-md border bg-gradient-card shadow-soft" />
             </div>
           </div>
 
@@ -178,14 +146,7 @@ export function MakerLabForm() {
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {timeSlots.map((slot) => (
-                <TimeSlotCard
-                  key={slot}
-                  time={slot}
-                  isSelected={selectedTimeSlots.includes(slot)}
-                  onSelect={() => handleTimeSlotSelect(slot)}
-                />
-              ))}
+              {timeSlots.map(slot => <TimeSlotCard key={slot} time={slot} isSelected={selectedTimeSlots.includes(slot)} onSelect={() => handleTimeSlotSelect(slot)} />)}
             </div>
           </div>
 
@@ -195,15 +156,7 @@ export function MakerLabForm() {
               3. Select Equipment you want to use
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {equipment.map((item) => (
-                <EquipmentCard
-                  key={item}
-                  name={item}
-                  isSelected={selectedEquipment.includes(item)}
-                  onSelect={() => handleEquipmentSelect(item)}
-                  disabled={item === "Laser Cutter"}
-                />
-              ))}
+              {equipment.map(item => <EquipmentCard key={item} name={item} isSelected={selectedEquipment.includes(item)} onSelect={() => handleEquipmentSelect(item)} disabled={item === "Laser Cutter"} />)}
             </div>
           </div>
 
@@ -213,68 +166,47 @@ export function MakerLabForm() {
               <Label htmlFor="name" className="text-base font-medium">
                 4. Name *
               </Label>
-              <Input
-                id="name"
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                className="bg-background border-border focus:ring-primary"
-                required
-              />
+              <Input id="name" type="text" value={formData.name} onChange={e => setFormData(prev => ({
+              ...prev,
+              name: e.target.value
+            }))} className="bg-background border-border focus:ring-primary" required />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="currentDate" className="text-base font-medium">
                 5. Current Date *
               </Label>
-              <Input
-                id="currentDate"
-                type="date"
-                value={formData.currentDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, currentDate: e.target.value }))}
-                className="bg-background border-border focus:ring-primary"
-                required
-              />
+              <Input id="currentDate" type="date" value={formData.currentDate} onChange={e => setFormData(prev => ({
+              ...prev,
+              currentDate: e.target.value
+            }))} className="bg-background border-border focus:ring-primary" required />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="email" className="text-base font-medium">
                 6. Email *
               </Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                className="bg-background border-border focus:ring-primary"
-                required
-              />
+              <Input id="email" type="email" value={formData.email} onChange={e => setFormData(prev => ({
+              ...prev,
+              email: e.target.value
+            }))} className="bg-background border-border focus:ring-primary" required />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-base font-medium">
                 7. Phone *
               </Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                className="bg-background border-border focus:ring-primary"
-                required
-              />
+              <Input id="phone" type="tel" value={formData.phone} onChange={e => setFormData(prev => ({
+              ...prev,
+              phone: e.target.value
+            }))} className="bg-background border-border focus:ring-primary" required />
             </div>
           </div>
 
-          <Button 
-            type="submit" 
-            className="w-full bg-gradient-hero hover:shadow-glow transition-all duration-300 font-semibold"
-            size="lg"
-          >
+          <Button type="submit" className="w-full bg-gradient-hero hover:shadow-glow transition-all duration-300 font-semibold" size="lg">
             Submit Booking Request
           </Button>
         </form>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 }
