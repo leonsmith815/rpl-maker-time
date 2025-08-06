@@ -9,6 +9,7 @@ import { EquipmentCard } from "@/components/ui/equipment-card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 const timeSlots = ["Tuesday 11 AM - 1 PM", "Tuesday 2 PM - 4 PM", "Wednesday 11 AM - 1 PM", "Thursday 11 AM - 1 PM", "Thursday 2 PM - 4 PM", "Friday 11 AM - 1 PM", "Friday 2 PM - 4 PM"];
 const equipment = ["Cricut Make", "Laser Cutter", "3D Printers", "Embroidery Machine", "Sewing Machines", "Brother Serger", "Direct-to-Film (DTF) Printer", "Media Room (Green Screen)", "Recording Studio (Podcast)"];
 export function MakerLabForm() {
@@ -108,8 +109,8 @@ export function MakerLabForm() {
     }
 
     try {
-      // Convert dates to strings for database storage
-      const dateStrings = selectedDates.map(date => date.toISOString().split('T')[0]);
+      // Convert dates to long format for database storage
+      const dateStrings = selectedDates.map(date => format(date, "EEEE, MMMM do, yyyy"));
       
       const { data, error } = await supabase
         .from('maker_lab_bookings')
