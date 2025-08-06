@@ -7,6 +7,13 @@ const Index = () => {
       {/* Hero Section */}
       <div className="bg-gradient-hero text-primary-foreground py-16">
         <div className="container mx-auto px-4 text-center">
+          <div className="flex justify-center mb-6">
+            <img 
+              src="/lovable-uploads/004a9351-90ac-46eb-a06c-85b258b488e8.png" 
+              alt="Rockford Public Library" 
+              className="h-16 md:h-20"
+            />
+          </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
             RPL Maker Lab
           </h1>
