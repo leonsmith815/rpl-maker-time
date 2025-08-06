@@ -1,11 +1,38 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { MakerLabForm } from "@/components/maker-lab-form";
+import { HoursCard } from "@/components/hours-card";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <div className="bg-gradient-hero text-primary-foreground py-16">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            RPL Maker Lab
+          </h1>
+          <p className="text-xl md:text-2xl text-primary-foreground/90 max-w-2xl mx-auto">
+            Where Innovation Meets Creation
+          </p>
+          <p className="text-lg text-primary-foreground/80 mt-4 max-w-3xl mx-auto">
+            Access cutting-edge equipment including 3D printers, laser cutters, recording studios, and more. 
+            Book your time slot and bring your ideas to life.
+          </p>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Hours Card */}
+          <div className="lg:col-span-1">
+            <HoursCard />
+          </div>
+          
+          {/* Main Form */}
+          <div className="lg:col-span-3">
+            <MakerLabForm />
+          </div>
+        </div>
       </div>
     </div>
   );
