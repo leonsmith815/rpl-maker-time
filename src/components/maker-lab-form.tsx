@@ -115,11 +115,34 @@ export function MakerLabForm() {
       </CardHeader>
       <CardContent className="space-y-8">
         <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Lab Access Options Section */}
+          <div className="space-y-4">
+            <Label className="text-lg font-semibold">
+              1. Lab Access Options
+            </Label>
+            <div className="bg-muted/50 p-4 rounded-lg space-y-3">
+              <p className="text-sm text-foreground">
+                We offer two options for lab access:
+              </p>
+              <div className="space-y-2">
+                <p className="text-sm">
+                  <span className="font-medium">Training</span> – This is required before independent use.
+                </p>
+                <p className="text-sm">
+                  <span className="font-medium">Appointment</span> – Reserve a specific time slot to guarantee your space.
+                </p>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Once training is completed and you are approved to work independently, you may use the lab anytime during open hours, provided no appointments are scheduled during that time. To ensure access and reserve your space, we strongly recommend making an appointment.
+              </p>
+            </div>
+          </div>
+
           {/* Date Selection Section */}
           <div className="space-y-4">
             <div>
               <Label className="text-lg font-semibold">
-                1. Select your preferred dates (maximum 3)
+                2. Select your preferred dates (maximum 3)
               </Label>
               <p className="mt-1 text-xl font-bold text-center text-slate-950">
                 Click on the calendar to select up to 3 preferred dates. Earliest appointments are for next week. Selected dates: {selectedDates.length}/3
@@ -139,7 +162,7 @@ export function MakerLabForm() {
           <div className="space-y-4">
             <div>
               <Label className="text-lg font-semibold">
-                2. Please select three (3) preferred time slots below
+                3. Please select three (3) preferred time slots below
               </Label>
               <p className="text-sm text-muted-foreground mt-1">
                 You will be contacted based on availability. Earliest appointments are for next week.
@@ -154,7 +177,7 @@ export function MakerLabForm() {
           {/* Equipment Section */}
           <div className="space-y-4">
             <Label className="text-lg font-semibold">
-              3. Select Equipment you want to use
+              4. Select Equipment you want to use
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {equipment.map(item => <EquipmentCard key={item} name={item} isSelected={selectedEquipment.includes(item)} onSelect={() => handleEquipmentSelect(item)} disabled={item === "Laser Cutter"} />)}
@@ -165,7 +188,7 @@ export function MakerLabForm() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-base font-medium">
-                4. Name *
+                5. Name *
               </Label>
               <Input id="name" type="text" value={formData.name} onChange={e => setFormData(prev => ({
               ...prev,
@@ -175,7 +198,7 @@ export function MakerLabForm() {
 
             <div className="space-y-2">
               <Label htmlFor="currentDate" className="text-base font-medium">
-                5. Current Date *
+                6. Current Date *
               </Label>
               <Input id="currentDate" type="date" value={formData.currentDate} onChange={e => setFormData(prev => ({
               ...prev,
@@ -185,7 +208,7 @@ export function MakerLabForm() {
 
             <div className="space-y-2">
               <Label htmlFor="email" className="text-base font-medium">
-                6. Email *
+                7. Email *
               </Label>
               <Input id="email" type="email" value={formData.email} onChange={e => setFormData(prev => ({
               ...prev,
@@ -195,7 +218,7 @@ export function MakerLabForm() {
 
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-base font-medium">
-                7. Phone *
+                8. Phone *
               </Label>
               <Input id="phone" type="tel" value={formData.phone} onChange={e => setFormData(prev => ({
               ...prev,
