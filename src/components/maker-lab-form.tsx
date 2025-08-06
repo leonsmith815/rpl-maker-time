@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { TimeSlotCard } from "@/components/ui/time-slot-card";
 import { EquipmentCard } from "@/components/ui/equipment-card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 const timeSlots = ["Tuesday 11 AM - 1 PM", "Tuesday 2 PM - 4 PM", "Wednesday 11 AM - 1 PM", "Thursday 11 AM - 1 PM", "Thursday 2 PM - 4 PM", "Friday 11 AM - 1 PM", "Friday 2 PM - 4 PM"];
 const equipment = ["Cricut Make", "Laser Cutter", "3D Printers", "Embroidery Machine", "Sewing Machines", "Brother Serger", "Direct-to-Film (DTF) Printer", "Media Room (Green Screen)", "Recording Studio (Podcast)"];
@@ -13,6 +14,7 @@ export function MakerLabForm() {
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>([]);
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
+  const [accessOption, setAccessOption] = useState<string>("");
   const [formData, setFormData] = useState({
     name: "",
     currentDate: "",
@@ -99,6 +101,7 @@ export function MakerLabForm() {
     setSelectedDates([]);
     setSelectedTimeSlots([]);
     setSelectedEquipment([]);
+    setAccessOption("");
     setFormData({
       name: "",
       currentDate: "",
@@ -115,11 +118,53 @@ export function MakerLabForm() {
       </CardHeader>
       <CardContent className="space-y-8">
         <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Lab Access Options Section */}
+          <div className="space-y-4">
+            <Label className="text-lg font-semibold">
+              1. Lab Access Options
+            </Label>
+            <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                To begin using the lab, you must first complete the required training or schedule an appointment. Below are the three access options available:
+              </p>
+              <div className="space-y-3">
+                <div>
+                  <h4 className="font-semibold text-foreground">Training Session</h4>
+                  <p className="text-sm text-muted-foreground">All users must complete a training session before using the lab equipment. This ensures safe and proper use of all resources.</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground">Scheduled Appointment</h4>
+                  <p className="text-sm text-muted-foreground">Once training is complete, you may schedule an appointment to reserve your preferred equipment. This guarantees your access during the scheduled time.</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground">Walk-In Access</h4>
+                  <p className="text-sm text-muted-foreground">After completing training, you may also use the lab during open hours on a walk-in basis. Please note, walk-in use is only allowed if no appointments are scheduled during that time.</p>
+                </div>
+              </div>
+              <p className="text-sm font-medium text-foreground">
+                To guarantee access to specific equipment, we strongly recommend scheduling an appointment in advance.
+              </p>
+              <div className="mt-4">
+                <Label className="text-base font-medium">Please select one of the following options to proceed:</Label>
+                <RadioGroup value={accessOption} onValueChange={setAccessOption} className="mt-3">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="training" id="training" />
+                    <Label htmlFor="training" className="text-sm">I would like to schedule a Training Session.</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="appointment" id="appointment" />
+                    <Label htmlFor="appointment" className="text-sm">I have completed training and would like to make an Appointment.</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            </div>
+          </div>
+
           {/* Date Selection Section */}
           <div className="space-y-4">
             <div>
               <Label className="text-lg font-semibold">
-                1. Select your preferred dates (maximum 3)
+                2. Select your preferred dates (maximum 3)
               </Label>
               <p className="mt-1 text-xl font-bold text-center text-slate-950">
                 Click on the calendar to select up to 3 preferred dates. Earliest appointments are for next week. Selected dates: {selectedDates.length}/3
@@ -139,7 +184,7 @@ export function MakerLabForm() {
           <div className="space-y-4">
             <div>
               <Label className="text-lg font-semibold">
-                2. Please select three (3) preferred time slots below
+                3. Please select three (3) preferred time slots below
               </Label>
               <p className="text-sm text-muted-foreground mt-1">
                 You will be contacted based on availability. Earliest appointments are for next week.
@@ -154,7 +199,7 @@ export function MakerLabForm() {
           {/* Equipment Section */}
           <div className="space-y-4">
             <Label className="text-lg font-semibold">
-              3. Select Equipment you want to use
+              4. Select Equipment you want to use
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {equipment.map(item => <EquipmentCard key={item} name={item} isSelected={selectedEquipment.includes(item)} onSelect={() => handleEquipmentSelect(item)} disabled={item === "Laser Cutter"} />)}
@@ -165,7 +210,7 @@ export function MakerLabForm() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-base font-medium">
-                4. Name *
+                5. Name *
               </Label>
               <Input id="name" type="text" value={formData.name} onChange={e => setFormData(prev => ({
               ...prev,
@@ -175,7 +220,7 @@ export function MakerLabForm() {
 
             <div className="space-y-2">
               <Label htmlFor="currentDate" className="text-base font-medium">
-                5. Current Date *
+                6. Current Date *
               </Label>
               <Input id="currentDate" type="date" value={formData.currentDate} onChange={e => setFormData(prev => ({
               ...prev,
@@ -185,7 +230,7 @@ export function MakerLabForm() {
 
             <div className="space-y-2">
               <Label htmlFor="email" className="text-base font-medium">
-                6. Email *
+                7. Email *
               </Label>
               <Input id="email" type="email" value={formData.email} onChange={e => setFormData(prev => ({
               ...prev,
@@ -195,7 +240,7 @@ export function MakerLabForm() {
 
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-base font-medium">
-                7. Phone *
+                8. Phone *
               </Label>
               <Input id="phone" type="tel" value={formData.phone} onChange={e => setFormData(prev => ({
               ...prev,
