@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
 import { TimeSlotCard } from "@/components/ui/time-slot-card";
 import { EquipmentCard } from "@/components/ui/equipment-card";
 import { useToast } from "@/hooks/use-toast";
@@ -30,6 +31,7 @@ const equipment = [
 ];
 
 export function MakerLabForm() {
+  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>([]);
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
   const [formData, setFormData] = useState({
@@ -62,9 +64,28 @@ export function MakerLabForm() {
     }
   };
 
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+    
+    if (selectedDates.some(d => d.toDateString() === date.toDateString())) {
+      setSelectedDates(prev => prev.filter(d => d.toDateString() !== date.toDateString()));
+    } else {
+      setSelectedDates(prev => [...prev, date]);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (selectedDates.length === 0) {
+      toast({
+        title: "Please select dates",
+        description: "You must select at least one date from the calendar.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (selectedTimeSlots.length !== 3) {
       toast({
         title: "Please select 3 time slots",
@@ -98,6 +119,7 @@ export function MakerLabForm() {
     });
 
     // Reset form
+    setSelectedDates([]);
     setSelectedTimeSlots([]);
     setSelectedEquipment([]);
     setFormData({ name: "", currentDate: "", email: "", phone: "" });
@@ -113,11 +135,32 @@ export function MakerLabForm() {
       </CardHeader>
       <CardContent className="space-y-8">
         <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Date Selection Section */}
+          <div className="space-y-4">
+            <div>
+              <Label className="text-lg font-semibold">
+                1. Select your preferred dates
+              </Label>
+              <p className="text-sm text-muted-foreground mt-1">
+                Click on the calendar to select multiple dates. Selected dates: {selectedDates.length}
+              </p>
+            </div>
+            <div className="flex justify-center">
+              <Calendar
+                mode="multiple"
+                selected={selectedDates}
+                onSelect={(dates) => setSelectedDates(dates || [])}
+                disabled={(date) => date < new Date()}
+                className="rounded-md border bg-gradient-card shadow-soft"
+              />
+            </div>
+          </div>
+
           {/* Time Slots Section */}
           <div className="space-y-4">
             <div>
               <Label className="text-lg font-semibold">
-                1. Please select three (3) preferred time slots below
+                2. Please select three (3) preferred time slots below
               </Label>
               <p className="text-sm text-muted-foreground mt-1">
                 You will be contacted based on availability. Earliest appointments are for next week.
@@ -139,7 +182,7 @@ export function MakerLabForm() {
           {/* Equipment Section */}
           <div className="space-y-4">
             <Label className="text-lg font-semibold">
-              2. Select Equipment you want to use
+              3. Select Equipment you want to use
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {equipment.map((item) => (
@@ -157,7 +200,7 @@ export function MakerLabForm() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-base font-medium">
-                3. Name *
+                4. Name *
               </Label>
               <Input
                 id="name"
@@ -171,7 +214,7 @@ export function MakerLabForm() {
 
             <div className="space-y-2">
               <Label htmlFor="currentDate" className="text-base font-medium">
-                4. Current Date *
+                5. Current Date *
               </Label>
               <Input
                 id="currentDate"
@@ -185,7 +228,7 @@ export function MakerLabForm() {
 
             <div className="space-y-2">
               <Label htmlFor="email" className="text-base font-medium">
-                5. Email *
+                6. Email *
               </Label>
               <Input
                 id="email"
@@ -199,7 +242,7 @@ export function MakerLabForm() {
 
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-base font-medium">
-                6. Phone *
+                7. Phone *
               </Label>
               <Input
                 id="phone"
