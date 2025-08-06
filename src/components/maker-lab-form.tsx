@@ -69,8 +69,14 @@ export function MakerLabForm() {
     
     if (selectedDates.some(d => d.toDateString() === date.toDateString())) {
       setSelectedDates(prev => prev.filter(d => d.toDateString() !== date.toDateString()));
-    } else {
+    } else if (selectedDates.length < 3) {
       setSelectedDates(prev => [...prev, date]);
+    } else {
+      toast({
+        title: "Maximum 3 dates",
+        description: "Please select only 3 preferred dates.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -139,10 +145,10 @@ export function MakerLabForm() {
           <div className="space-y-4">
             <div>
               <Label className="text-lg font-semibold">
-                1. Select your preferred dates
+                1. Select your preferred dates (maximum 3)
               </Label>
               <p className="text-sm text-muted-foreground mt-1">
-                Click on the calendar to select multiple dates. Selected dates: {selectedDates.length}
+                Click on the calendar to select up to 3 preferred dates. Selected dates: {selectedDates.length}/3
               </p>
             </div>
             <div className="flex justify-center">
