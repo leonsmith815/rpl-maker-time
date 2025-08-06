@@ -264,9 +264,10 @@ export function MakerLabForm() {
                     disabled={date => {
                     const isPastDate = date < new Date();
                     const isMaxSelected = selectedDates.length >= 3 && !selectedDates.some(d => d.toDateString() === date.toDateString());
-                    const isClosed = date.getDay() === 0 || date.getDay() === 1 || date.getDay() === 6; // Sunday (0), Monday (1), or Saturday (6)
+                    // Maker Lab is open Tuesday-Friday (days 2-5)
+                    const isClosed = date.getDay() === 0 || date.getDay() === 1 || date.getDay() === 6; // Sunday (0), Monday (1), Saturday (6)
                     return isPastDate || isMaxSelected || isClosed;
-                  }} 
+                  }}
                     className="rounded-xl border-0 shadow-none bg-transparent" 
                   />
                 </div>
