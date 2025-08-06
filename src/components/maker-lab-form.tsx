@@ -8,6 +8,7 @@ import { TimeSlotCard } from "@/components/ui/time-slot-card";
 import { EquipmentCard } from "@/components/ui/equipment-card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 const timeSlots = ["Tuesday 11 AM - 1 PM", "Tuesday 2 PM - 4 PM", "Wednesday 11 AM - 1 PM", "Thursday 11 AM - 1 PM", "Thursday 2 PM - 4 PM", "Friday 11 AM - 1 PM", "Friday 2 PM - 4 PM"];
 const equipment = ["Cricut Make", "Laser Cutter", "3D Printers", "Embroidery Machine", "Sewing Machines", "Brother Serger", "Direct-to-Film (DTF) Printer", "Media Room (Green Screen)", "Recording Studio (Podcast)"];
 export function MakerLabForm() {
@@ -32,7 +33,7 @@ export function MakerLabForm() {
     } else {
       toast({
         title: "Maximum 3 time slots",
-        description: "Please select only 3 preferred time slots.",
+        description: "Please select up to 3 preferred time slots.",
         variant: "destructive"
       });
     }
@@ -58,8 +59,18 @@ export function MakerLabForm() {
       });
     }
   };
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!accessOption) {
+      toast({
+        title: "Please select access option",
+        description: "You must select either Training or Appointment.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     if (selectedDates.length === 0) {
       toast({
         title: "Please select dates",
@@ -68,14 +79,16 @@ export function MakerLabForm() {
       });
       return;
     }
-    if (selectedTimeSlots.length !== 3) {
+    
+    if (selectedTimeSlots.length === 0) {
       toast({
-        title: "Please select 3 time slots",
-        description: "You must select exactly 3 preferred time slots.",
+        title: "Please select time slots",
+        description: "You must select at least 1 preferred time slot.",
         variant: "destructive"
       });
       return;
     }
+    
     if (selectedEquipment.length === 0) {
       toast({
         title: "Please select equipment",
@@ -84,6 +97,7 @@ export function MakerLabForm() {
       });
       return;
     }
+    
     if (!formData.name || !formData.email || !formData.phone || !formData.currentDate) {
       toast({
         title: "Please fill all fields",
@@ -92,22 +106,59 @@ export function MakerLabForm() {
       });
       return;
     }
-    toast({
-      title: "Booking submitted!",
-      description: "We'll contact you based on availability. Thank you!"
-    });
 
-    // Reset form
-    setSelectedDates([]);
-    setSelectedTimeSlots([]);
-    setSelectedEquipment([]);
-    setAccessOption("");
-    setFormData({
-      name: "",
-      currentDate: "",
-      email: "",
-      phone: ""
-    });
+    try {
+      // Convert dates to strings for database storage
+      const dateStrings = selectedDates.map(date => date.toISOString().split('T')[0]);
+      
+      const { data, error } = await supabase
+        .from('maker_lab_bookings')
+        .insert({
+          access_option: accessOption,
+          selected_dates: dateStrings,
+          selected_time_slots: selectedTimeSlots,
+          selected_equipment: selectedEquipment,
+          full_name: formData.name,
+          preferred_date: formData.currentDate,
+          email: formData.email,
+          phone: formData.phone,
+          status: 'pending'
+        });
+
+      if (error) {
+        console.error('Database error:', error);
+        toast({
+          title: "Submission failed",
+          description: "There was an error submitting your booking. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Booking submitted!",
+        description: "We'll contact you based on availability. Thank you!"
+      });
+
+      // Reset form
+      setSelectedDates([]);
+      setSelectedTimeSlots([]);
+      setSelectedEquipment([]);
+      setAccessOption("");
+      setFormData({
+        name: "",
+        currentDate: "",
+        email: "",
+        phone: ""
+      });
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast({
+        title: "Submission failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
   return <div className="w-full max-w-5xl mx-auto space-y-8">
       {/* Hero Section */}
@@ -234,7 +285,7 @@ export function MakerLabForm() {
             </div>
             <div className="p-8 bg-gradient-section rounded-2xl border border-border/50 shadow-float">
               <p className="text-muted-foreground text-lg mb-2 text-center">
-                You will be contacted based on availability. Earliest appointments are for next week.
+                Select 1-3 preferred time slots. You will be contacted based on availability.
               </p>
               <div className="text-center mb-6">
                 <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
