@@ -201,6 +201,7 @@ export function MakerLabForm() {
                   name={item}
                   isSelected={selectedEquipment.includes(item)}
                   onSelect={() => handleEquipmentSelect(item)}
+                  disabled={item === "Laser Cutter"}
                 />
               ))}
             </div>
