@@ -137,6 +137,33 @@ export default function AdminDashboard() {
         throw error;
       }
 
+      // Find the booking to get customer details for email
+      const booking = bookings.find(b => b.id === bookingId);
+      if (booking) {
+        // Send email notification
+        try {
+          const { error: emailError } = await supabase.functions.invoke('send-booking-notification', {
+            body: {
+              email: booking.email,
+              fullName: booking.full_name,
+              status: newStatus,
+              selectedDates: booking.selected_dates,
+              selectedTimeSlots: booking.selected_time_slots,
+              selectedEquipment: booking.selected_equipment,
+              actionDate: actionDate
+            }
+          });
+
+          if (emailError) {
+            console.error("Failed to send email notification:", emailError);
+            // Don't fail the status update if email fails
+          }
+        } catch (emailError) {
+          console.error("Error sending email notification:", emailError);
+          // Don't fail the status update if email fails
+        }
+      }
+
       // Update local state
       setBookings(bookings.map(booking => 
         booking.id === bookingId 
@@ -146,7 +173,7 @@ export default function AdminDashboard() {
 
       toast({
         title: "Status Updated",
-        description: `Booking status changed to ${newStatus}${scheduledDate ? ` for ${format(scheduledDate, 'PPP')}` : ''}`,
+        description: `Booking status changed to ${newStatus}${scheduledDate ? ` for ${format(scheduledDate, 'PPP')}` : ''}. Email notification sent to customer.`,
       });
     } catch (error) {
       toast({
