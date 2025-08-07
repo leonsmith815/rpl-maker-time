@@ -136,40 +136,10 @@ export function MakerLabForm() {
         return;
       }
 
-      // Send confirmation email
-      try {
-        const emailResponse = await supabase.functions.invoke('send-booking-confirmation', {
-          body: {
-            fullName: formData.name,
-            email: formData.email,
-            phone: formData.phone,
-            accessOption: accessOption,
-            selectedDates: dateStrings,
-            selectedTimeSlots: selectedTimeSlots,
-            selectedEquipment: selectedEquipment,
-            preferredDate: formData.currentDate
-          }
-        });
-
-        if (emailResponse.error) {
-          console.error('Email error:', emailResponse.error);
-          toast({
-            title: "Booking submitted!",
-            description: "Your booking was saved but we couldn't send the confirmation email. We'll contact you based on availability.",
-          });
-        } else {
-          toast({
-            title: "Booking submitted!",
-            description: "Confirmation email sent! We'll contact you based on availability. Thank you!"
-          });
-        }
-      } catch (emailError) {
-        console.error('Email sending failed:', emailError);
-        toast({
-          title: "Booking submitted!",
-          description: "Your booking was saved but we couldn't send the confirmation email. We'll contact you based on availability.",
-        });
-      }
+      toast({
+        title: "Booking submitted!",
+        description: "We'll contact you based on availability. Thank you!"
+      });
 
       // Reset form
       setSelectedDates([]);
