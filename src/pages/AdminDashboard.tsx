@@ -217,25 +217,30 @@ export default function AdminDashboard() {
     doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 30);
 
     const formatDates = (dates: string[]) => {
-      return dates.map(date => {
-        const d = new Date(date);
-        return d.toLocaleDateString('en-US', { 
-          weekday: 'long', 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
-        });
+      return dates.map(dateStr => {
+        try {
+          // Handle both ISO format and long format dates
+          if (dateStr.includes('-') && dateStr.length === 10) {
+            // ISO format: convert to long format
+            const d = new Date(dateStr);
+            if (!isNaN(d.getTime())) {
+              return d.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              });
+            }
+          }
+          // Already in long format or handle as-is
+          return dateStr;
+        } catch (error) {
+          return dateStr;
+        }
       }).join('\n');
     };
 
-    const formatTimes = (dates: string[], times: string[]) => {
-      if (dates.length === times.length) {
-        return dates.map((date, index) => {
-          const d = new Date(date);
-          const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
-          return `${dayName} ${times[index]}`;
-        }).join('\n');
-      }
+    const formatTimes = (times: string[]) => {
       return times.join('\n');
     };
 
@@ -246,7 +251,7 @@ export default function AdminDashboard() {
       booking.access_option,
       booking.selected_equipment.join(", "),
       formatDates(booking.selected_dates),
-      formatTimes(booking.selected_dates, booking.selected_time_slots),
+      formatTimes(booking.selected_time_slots),
       booking.status,
       new Date(booking.created_at).toLocaleDateString(),
       booking.action_date ? new Date(booking.action_date).toLocaleDateString() : "N/A",
@@ -408,46 +413,32 @@ export default function AdminDashboard() {
                         <div className="max-w-48 text-sm">
                           {booking.selected_dates.map((dateStr, index) => {
                             try {
-                              const d = new Date(dateStr);
-                              if (isNaN(d.getTime())) {
-                                return <div key={index}>Invalid Date</div>;
-                              }
-                              return (
-                                <div key={index}>
-                                  {d.toLocaleDateString('en-US', { 
+                              // Handle both ISO format and long format dates
+                              let displayDate = dateStr;
+                              if (dateStr.includes('-') && dateStr.length === 10) {
+                                // ISO format: convert to long format
+                                const d = new Date(dateStr);
+                                if (!isNaN(d.getTime())) {
+                                  displayDate = d.toLocaleDateString('en-US', { 
                                     weekday: 'long', 
                                     year: 'numeric', 
                                     month: 'long', 
                                     day: 'numeric' 
-                                  })}
-                                </div>
-                              );
+                                  });
+                                }
+                              }
+                              return <div key={index}>{displayDate}</div>;
                             } catch (error) {
-                              return <div key={index}>Invalid Date</div>;
+                              return <div key={index}>{dateStr}</div>;
                             }
                           })}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="max-w-48 text-sm">
-                          {booking.selected_dates.length === booking.selected_time_slots.length ? 
-                            booking.selected_dates.map((dateStr, index) => {
-                              try {
-                                const d = new Date(dateStr);
-                                if (isNaN(d.getTime())) {
-                                  return <div key={index}>Invalid Date - {booking.selected_time_slots[index]}</div>;
-                                }
-                                const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
-                                return <div key={index}>{dayName} {booking.selected_time_slots[index]}</div>;
-                              } catch (error) {
-                                return <div key={index}>Invalid Date - {booking.selected_time_slots[index]}</div>;
-                              }
-                            })
-                            :
-                            booking.selected_time_slots.map((timeSlot, index) => (
-                              <div key={index}>{timeSlot}</div>
-                            ))
-                          }
+                          {booking.selected_time_slots.map((timeSlot, index) => (
+                            <div key={index}>{timeSlot}</div>
+                          ))}
                         </div>
                       </TableCell>
                        <TableCell>
