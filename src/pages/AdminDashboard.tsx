@@ -360,13 +360,33 @@ export default function AdminDashboard() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="max-w-32 truncate">
-                          {booking.selected_dates.join(", ")}
+                        <div className="max-w-48 text-sm">
+                          {booking.selected_dates.map(date => {
+                            const d = new Date(date);
+                            return d.toLocaleDateString('en-US', { 
+                              weekday: 'long', 
+                              year: 'numeric', 
+                              month: 'long', 
+                              day: 'numeric' 
+                            });
+                          }).map((formattedDate, index) => (
+                            <div key={index}>{formattedDate}</div>
+                          ))}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="max-w-32 truncate">
-                          {booking.selected_time_slots.join(", ")}
+                        <div className="max-w-48 text-sm">
+                          {booking.selected_dates.length === booking.selected_time_slots.length ? 
+                            booking.selected_dates.map((date, index) => {
+                              const d = new Date(date);
+                              const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
+                              return <div key={index}>{dayName} {booking.selected_time_slots[index]}</div>;
+                            })
+                            :
+                            booking.selected_time_slots.map((timeSlot, index) => (
+                              <div key={index}>{timeSlot}</div>
+                            ))
+                          }
                         </div>
                       </TableCell>
                        <TableCell>
