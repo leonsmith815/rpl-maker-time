@@ -55,14 +55,14 @@ const generateEmailContent = (data: BookingNotificationRequest) => {
         
         <h3>📅 Appointment Details:</h3>
         <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
-          <p><strong>Appointment Dates:</strong></p>
+          <p><strong>Requested Appointment Dates:</strong></p>
           <ul>
             ${(selectedDates && selectedDates.length > 0) ? 
               formattedDates.map(date => `<li style="margin: 5px 0;">${date}</li>`).join('') : 
               '<li>No dates specified</li>'}
           </ul>
           
-          <p><strong>Time Slots:</strong></p>
+          <p><strong>Requested Time Slots:</strong></p>
           <ul>
             ${(selectedTimeSlots && selectedTimeSlots.length > 0) ? 
               selectedTimeSlots.map(time => `<li style="margin: 5px 0;">${time}</li>`).join('') : 
@@ -108,14 +108,14 @@ const generateEmailContent = (data: BookingNotificationRequest) => {
         
         <h3>📋 Cancelled Session Details:</h3>
         <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #ffc107;">
-          <p><strong>Cancelled Dates:</strong></p>
+          <p><strong>Requested Appointment Dates:</strong></p>
           <ul>
             ${(selectedDates && selectedDates.length > 0) ? 
               formattedDates.map(date => `<li style="margin: 5px 0;">${date}</li>`).join('') : 
               '<li>No dates specified</li>'}
           </ul>
           
-          <p><strong>Cancelled Time Slots:</strong></p>
+          <p><strong>Requested Time Slots:</strong></p>
           <ul>
             ${(selectedTimeSlots && selectedTimeSlots.length > 0) ? 
               selectedTimeSlots.map(time => `<li style="margin: 5px 0;">${time}</li>`).join('') : 
@@ -155,14 +155,14 @@ const generateEmailContent = (data: BookingNotificationRequest) => {
         
         <h3>📋 Missed Session Details:</h3>
         <div style="background-color: #f8d7da; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #dc3545;">
-          <p><strong>Missed Dates:</strong></p>
+          <p><strong>Requested Appointment Dates:</strong></p>
           <ul>
             ${(selectedDates && selectedDates.length > 0) ? 
               formattedDates.map(date => `<li style="margin: 5px 0;">${date}</li>`).join('') : 
               '<li>No dates specified</li>'}
           </ul>
           
-          <p><strong>Missed Time Slots:</strong></p>
+          <p><strong>Requested Time Slots:</strong></p>
           <ul>
             ${(selectedTimeSlots && selectedTimeSlots.length > 0) ? 
               selectedTimeSlots.map(time => `<li style="margin: 5px 0;">${time}</li>`).join('') : 
