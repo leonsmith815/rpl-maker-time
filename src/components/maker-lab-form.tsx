@@ -19,7 +19,7 @@ export function MakerLabForm() {
   const [accessOption, setAccessOption] = useState<string>("");
   const [formData, setFormData] = useState({
     name: "",
-    currentDate: format(new Date(), "MM/dd/yyyy"),
+    currentDate: "",
     email: "",
     phone: ""
   });
@@ -29,10 +29,23 @@ export function MakerLabForm() {
 
   useEffect(() => {
     // Set current date on component mount
-    setFormData(prev => ({
-      ...prev,
-      currentDate: format(new Date(), "MM/dd/yyyy")
-    }));
+    try {
+      const today = new Date();
+      const formattedDate = format(today, "MM/dd/yyyy");
+      console.log("Setting current date:", formattedDate);
+      setFormData(prev => ({
+        ...prev,
+        currentDate: formattedDate
+      }));
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      // Fallback to simple date format if format function fails
+      const fallbackDate = new Date().toLocaleDateString();
+      setFormData(prev => ({
+        ...prev,
+        currentDate: fallbackDate
+      }));
+    }
   }, []);
   const handleTimeSlotSelect = (slot: string) => {
     if (selectedTimeSlots.includes(slot)) {
