@@ -210,6 +210,112 @@ export default function AdminDashboard() {
     );
   };
 
+  const CancelButton = ({ bookingId }: { bookingId: string }) => {
+    const [date, setDate] = useState<Date>();
+    const [open, setOpen] = useState(false);
+
+    const handleCancel = () => {
+      if (date) {
+        updateBookingStatus(bookingId, "cancelled", date);
+        setOpen(false);
+        setDate(undefined);
+      }
+    };
+
+    return (
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="ghost" className="cursor-pointer w-full justify-start">
+            Cancelled
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <div className="p-4 space-y-4">
+            <h4 className="font-medium">Select Cancellation Date</h4>
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={setDate}
+              initialFocus
+              className="pointer-events-auto"
+            />
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleCancel} 
+                disabled={!date}
+                size="sm"
+                className="flex-1"
+              >
+                <CalendarIcon className="h-4 w-4 mr-2" />
+                Cancel Booking
+              </Button>
+              <Button 
+                onClick={() => setOpen(false)} 
+                variant="outline" 
+                size="sm"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+    );
+  };
+
+  const MissedButton = ({ bookingId }: { bookingId: string }) => {
+    const [date, setDate] = useState<Date>();
+    const [open, setOpen] = useState(false);
+
+    const handleMissed = () => {
+      if (date) {
+        updateBookingStatus(bookingId, "missed", date);
+        setOpen(false);
+        setDate(undefined);
+      }
+    };
+
+    return (
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="ghost" className="cursor-pointer w-full justify-start">
+            Missed
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <div className="p-4 space-y-4">
+            <h4 className="font-medium">Select Missed Date</h4>
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={setDate}
+              initialFocus
+              className="pointer-events-auto"
+            />
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleMissed} 
+                disabled={!date}
+                size="sm"
+                className="flex-1"
+              >
+                <CalendarIcon className="h-4 w-4 mr-2" />
+                Mark Missed
+              </Button>
+              <Button 
+                onClick={() => setOpen(false)} 
+                variant="outline" 
+                size="sm"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+    );
+  };
+
   const deleteBooking = async (bookingId: string, bookingName: string) => {
     try {
       const { error } = await supabase
@@ -528,18 +634,12 @@ export default function AdminDashboard() {
                               <DropdownMenuItem asChild>
                                 <ScheduleButton bookingId={booking.id} />
                               </DropdownMenuItem>
-                             <DropdownMenuItem 
-                               onClick={() => updateBookingStatus(booking.id, "completed")}
-                               className="cursor-pointer"
-                             >
-                               Completed
-                             </DropdownMenuItem>
-                             <DropdownMenuItem 
-                               onClick={() => updateBookingStatus(booking.id, "cancelled")}
-                               className="cursor-pointer"
-                             >
-                               Cancelled
-                             </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <MissedButton bookingId={booking.id} />
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <CancelButton bookingId={booking.id} />
+                              </DropdownMenuItem>
                            </DropdownMenuContent>
                          </DropdownMenu>
                        </TableCell>
