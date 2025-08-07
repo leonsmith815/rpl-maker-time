@@ -76,7 +76,7 @@ const generateEmailContent = (data: BookingNotificationRequest) => {
               '<li>No equipment specified</li>'}
           </ul>
           
-          ${actionDate ? `<p><strong>Scheduled Date:</strong> ${new Date(actionDate).toLocaleDateString('en-US', { 
+          ${actionDate ? `<p style="font-size: 18px; font-weight: bold; margin: 15px 0;"><strong>🗓️ Scheduled Date:</strong> ${new Date(actionDate).toLocaleDateString('en-US', { 
             weekday: 'long', 
             year: 'numeric', 
             month: 'long', 
