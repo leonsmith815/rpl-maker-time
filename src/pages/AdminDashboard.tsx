@@ -125,8 +125,6 @@ export default function AdminDashboard() {
 
   const updateBookingStatus = async (bookingId: string, newStatus: string, scheduledDate?: Date, scheduledTime?: string) => {
     try {
-      console.log("Starting booking status update:", { bookingId, newStatus, scheduledDate, scheduledTime });
-      
       let actionDate = scheduledDate ? scheduledDate.toISOString() : new Date().toISOString();
       
       // If time is provided, combine it with the date
@@ -137,8 +135,6 @@ export default function AdminDashboard() {
         actionDate = dateWithTime.toISOString();
       }
       
-      console.log("Action date:", actionDate);
-      
       const { error } = await supabase
         .from("maker_lab_bookings")
         .update({ 
@@ -148,20 +144,14 @@ export default function AdminDashboard() {
         .eq("id", bookingId);
 
       if (error) {
-        console.error("Database update error:", error);
         throw error;
       }
 
-      console.log("Database update successful");
-
       // Find the booking to get customer details for email
       const booking = bookings.find(b => b.id === bookingId);
-      console.log("Found booking for email:", booking ? "Yes" : "No");
-      
       if (booking) {
         // Send email notification
         try {
-          console.log("Sending email notification...");
           const { error: emailError } = await supabase.functions.invoke('send-booking-notification', {
             body: {
               email: booking.email,
@@ -177,8 +167,6 @@ export default function AdminDashboard() {
           if (emailError) {
             console.error("Failed to send email notification:", emailError);
             // Don't fail the status update if email fails
-          } else {
-            console.log("Email notification sent successfully");
           }
         } catch (emailError) {
           console.error("Error sending email notification:", emailError);
@@ -193,14 +181,11 @@ export default function AdminDashboard() {
           : booking
       ));
 
-      console.log("Status update completed successfully");
-
       toast({
         title: "Status Updated",
         description: `Booking status changed to ${newStatus}${scheduledDate ? ` for ${format(scheduledDate, 'PPP')}${scheduledTime ? ` at ${scheduledTime}` : ''}` : ''}. Email notification sent to customer.`,
       });
     } catch (error) {
-      console.error("Status update failed:", error);
       toast({
         title: "Error",
         description: "Failed to update booking status",
