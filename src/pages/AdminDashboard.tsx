@@ -361,26 +361,42 @@ export default function AdminDashboard() {
                       </TableCell>
                       <TableCell>
                         <div className="max-w-48 text-sm">
-                          {booking.selected_dates.map(date => {
-                            const d = new Date(date);
-                            return d.toLocaleDateString('en-US', { 
-                              weekday: 'long', 
-                              year: 'numeric', 
-                              month: 'long', 
-                              day: 'numeric' 
-                            });
-                          }).map((formattedDate, index) => (
-                            <div key={index}>{formattedDate}</div>
-                          ))}
+                          {booking.selected_dates.map((dateStr, index) => {
+                            try {
+                              const d = new Date(dateStr);
+                              if (isNaN(d.getTime())) {
+                                return <div key={index}>Invalid Date</div>;
+                              }
+                              return (
+                                <div key={index}>
+                                  {d.toLocaleDateString('en-US', { 
+                                    weekday: 'long', 
+                                    year: 'numeric', 
+                                    month: 'long', 
+                                    day: 'numeric' 
+                                  })}
+                                </div>
+                              );
+                            } catch (error) {
+                              return <div key={index}>Invalid Date</div>;
+                            }
+                          })}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="max-w-48 text-sm">
                           {booking.selected_dates.length === booking.selected_time_slots.length ? 
-                            booking.selected_dates.map((date, index) => {
-                              const d = new Date(date);
-                              const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
-                              return <div key={index}>{dayName} {booking.selected_time_slots[index]}</div>;
+                            booking.selected_dates.map((dateStr, index) => {
+                              try {
+                                const d = new Date(dateStr);
+                                if (isNaN(d.getTime())) {
+                                  return <div key={index}>Invalid Date - {booking.selected_time_slots[index]}</div>;
+                                }
+                                const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
+                                return <div key={index}>{dayName} {booking.selected_time_slots[index]}</div>;
+                              } catch (error) {
+                                return <div key={index}>Invalid Date - {booking.selected_time_slots[index]}</div>;
+                              }
                             })
                             :
                             booking.selected_time_slots.map((timeSlot, index) => (
