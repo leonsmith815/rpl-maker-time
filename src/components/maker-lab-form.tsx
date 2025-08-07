@@ -427,18 +427,14 @@ export function MakerLabForm() {
 
                 <div className="space-y-3">
                   <Label htmlFor="currentDate" className="text-base font-semibold text-foreground flex items-center gap-2">
-                    <span className="text-primary">•</span> Current Date *
+                    <span className="text-primary">•</span> Date of Submission
                   </Label>
                   <Input 
                     id="currentDate" 
-                    type="date" 
+                    type="text" 
                     value={formData.currentDate} 
-                    onChange={e => setFormData(prev => ({
-                      ...prev,
-                      currentDate: e.target.value
-                    }))} 
-                    className="h-12 bg-background/70 border-border/50 focus:border-primary focus:ring-primary/20 rounded-xl text-base" 
-                    required 
+                    readOnly
+                    className="h-12 bg-muted/50 border-border/50 rounded-xl text-base cursor-not-allowed" 
                   />
                 </div>
 
