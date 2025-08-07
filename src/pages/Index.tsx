@@ -1,12 +1,30 @@
 import { MakerLabForm } from "@/components/maker-lab-form";
 import { HoursCard } from "@/components/hours-card";
 import { EquipmentShowcase } from "@/components/equipment-showcase";
+import { Button } from "@/components/ui/button";
+import { Shield } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Admin Access Button */}
+      <div className="absolute top-4 right-4 z-10">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/admin-auth")}
+          className="gap-2 text-muted-foreground hover:text-foreground"
+        >
+          <Shield className="w-4 h-4" />
+          Admin
+        </Button>
+      </div>
+
       {/* Hero Section */}
-      <div className="bg-gradient-hero text-primary-foreground py-16">
+      <div className="bg-gradient-hero text-primary-foreground py-16 relative">
         <div className="container mx-auto px-4 text-center">
           <div className="flex justify-center mb-6">
             <img 
