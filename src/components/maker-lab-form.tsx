@@ -26,6 +26,20 @@ export function MakerLabForm() {
   const {
     toast
   } = useToast();
+  // Helper function to get available time slots based on selected dates
+  const getAvailableTimeSlots = () => {
+    if (selectedDates.length === 0) return [];
+    
+    const selectedDayNames = selectedDates.map(date => {
+      const dayName = format(date, "EEEE");
+      return dayName;
+    });
+    
+    return timeSlots.filter(slot => {
+      return selectedDayNames.some(dayName => slot.startsWith(dayName));
+    });
+  };
+
   const handleTimeSlotSelect = (slot: string) => {
     if (selectedTimeSlots.includes(slot)) {
       setSelectedTimeSlots(prev => prev.filter(s => s !== slot));
@@ -50,6 +64,13 @@ export function MakerLabForm() {
     if (!date) return;
     if (selectedDates.some(d => d.toDateString() === date.toDateString())) {
       setSelectedDates(prev => prev.filter(d => d.toDateString() !== date.toDateString()));
+      // Clear time slots that no longer match selected dates
+      const newDayNames = selectedDates
+        .filter(d => d.toDateString() !== date.toDateString())
+        .map(d => format(d, "EEEE"));
+      setSelectedTimeSlots(prev => 
+        prev.filter(slot => newDayNames.some(dayName => slot.startsWith(dayName)))
+      );
     } else if (selectedDates.length < 3) {
       setSelectedDates(prev => [...prev, date]);
     } else {
@@ -325,7 +346,25 @@ export function MakerLabForm() {
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {timeSlots.map(slot => <TimeSlotCard key={slot} time={slot} isSelected={selectedTimeSlots.includes(slot)} onSelect={() => handleTimeSlotSelect(slot)} />)}
+                {selectedDates.length === 0 ? (
+                  <div className="col-span-full text-center py-8 text-muted-foreground">
+                    Please select dates first to view available time slots
+                  </div>
+                ) : (
+                  timeSlots.map(slot => {
+                    const availableSlots = getAvailableTimeSlots();
+                    const isAvailable = availableSlots.includes(slot);
+                    return (
+                      <TimeSlotCard 
+                        key={slot} 
+                        time={slot} 
+                        isSelected={selectedTimeSlots.includes(slot)} 
+                        onSelect={() => handleTimeSlotSelect(slot)}
+                        disabled={!isAvailable}
+                      />
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>
