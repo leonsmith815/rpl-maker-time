@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,13 +19,21 @@ export function MakerLabForm() {
   const [accessOption, setAccessOption] = useState<string>("");
   const [formData, setFormData] = useState({
     name: "",
-    currentDate: "",
+    currentDate: format(new Date(), "MM/dd/yyyy"),
     email: "",
     phone: ""
   });
   const {
     toast
   } = useToast();
+
+  useEffect(() => {
+    // Set current date on component mount
+    setFormData(prev => ({
+      ...prev,
+      currentDate: format(new Date(), "MM/dd/yyyy")
+    }));
+  }, []);
   const handleTimeSlotSelect = (slot: string) => {
     if (selectedTimeSlots.includes(slot)) {
       setSelectedTimeSlots(prev => prev.filter(s => s !== slot));
@@ -178,7 +186,7 @@ export function MakerLabForm() {
       setAccessOption("");
       setFormData({
         name: "",
-        currentDate: "",
+        currentDate: format(new Date(), "MM/dd/yyyy"),
         email: "",
         phone: ""
       });
@@ -382,13 +390,10 @@ export function MakerLabForm() {
                   </Label>
                   <Input 
                     id="currentDate" 
-                    type="date" 
+                    type="text" 
                     value={formData.currentDate} 
-                    onChange={e => setFormData(prev => ({
-                      ...prev,
-                      currentDate: e.target.value
-                    }))} 
-                    className="h-12 bg-background/70 border-border/50 focus:border-primary focus:ring-primary/20 rounded-xl text-base" 
+                    readOnly
+                    className="h-12 bg-background/70 border-border/50 focus:border-primary focus:ring-primary/20 rounded-xl text-base cursor-not-allowed opacity-70" 
                     required 
                   />
                 </div>
