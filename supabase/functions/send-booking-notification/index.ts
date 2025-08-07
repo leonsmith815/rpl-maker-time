@@ -41,33 +41,39 @@ const formatDates = (dates: string[]) => {
 
 const generateEmailContent = (data: BookingNotificationRequest) => {
   const { fullName, status, selectedDates, selectedTimeSlots, selectedEquipment, actionDate } = data;
-  const formattedDates = formatDates(selectedDates);
+  const formattedDates = formatDates(selectedDates || []);
   
   let subject = "";
   let content = "";
   
   switch (status) {
     case "scheduled":
-      subject = "Your Maker Lab Session Has Been Scheduled";
+      subject = "Your Maker Lab Session Has Been Scheduled - Confirmation Required";
       content = `
         <h2>Great News, ${fullName}!</h2>
         <p>Your Maker Lab booking has been <strong>scheduled</strong>.</p>
         
         <h3>📅 Appointment Details:</h3>
         <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
-          <p><strong>Dates:</strong></p>
+          <p><strong>Appointment Dates:</strong></p>
           <ul>
-            ${formattedDates.map(date => `<li>${date}</li>`).join('')}
+            ${(selectedDates && selectedDates.length > 0) ? 
+              formattedDates.map(date => `<li style="margin: 5px 0;">${date}</li>`).join('') : 
+              '<li>No dates specified</li>'}
           </ul>
           
           <p><strong>Time Slots:</strong></p>
           <ul>
-            ${selectedTimeSlots.map(time => `<li>${time}</li>`).join('')}
+            ${(selectedTimeSlots && selectedTimeSlots.length > 0) ? 
+              selectedTimeSlots.map(time => `<li style="margin: 5px 0;">${time}</li>`).join('') : 
+              '<li>No time slots specified</li>'}
           </ul>
           
           <p><strong>Equipment Reserved:</strong></p>
           <ul>
-            ${selectedEquipment.map(equipment => `<li>${equipment}</li>`).join('')}
+            ${(selectedEquipment && selectedEquipment.length > 0) ? 
+              selectedEquipment.map(equipment => `<li style="margin: 5px 0;">${equipment}</li>`).join('') : 
+              '<li>No equipment specified</li>'}
           </ul>
           
           ${actionDate ? `<p><strong>Scheduled Date:</strong> ${new Date(actionDate).toLocaleDateString('en-US', { 
@@ -78,7 +84,14 @@ const generateEmailContent = (data: BookingNotificationRequest) => {
           })}</p>` : ''}
         </div>
         
-        <p>Please arrive on time and bring any necessary materials. If you need to make changes to your booking, please contact us as soon as possible.</p>
+        <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #ffc107;">
+          <p><strong>⚠️ IMPORTANT CONFIRMATION REQUIRED:</strong></p>
+          <p>You must confirm your appointment 24 hours prior by emailing <a href="mailto:Maker@rockfordpubliclibrary.org" style="color: #2754C5;">Maker@rockfordpubliclibrary.org</a>. If not confirmed, your appointment will be cancelled and you will need to reschedule.</p>
+          <p><strong>Late Arrival Policy:</strong> Your appointment will be considered missed and cancelled if you arrive more than 15 minutes after your scheduled time.</p>
+        </div>
+        
+        <p>Please arrive on time and bring any necessary materials.</p>
+        <p>Questions? Email us at <a href="mailto:Maker@rockfordpubliclibrary.org" style="color: #2754C5;">Maker@rockfordpubliclibrary.org</a></p>
       `;
       break;
       
@@ -90,19 +103,25 @@ const generateEmailContent = (data: BookingNotificationRequest) => {
         
         <h3>📋 Cancelled Session Details:</h3>
         <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #ffc107;">
-          <p><strong>Original Dates:</strong></p>
+          <p><strong>Cancelled Dates:</strong></p>
           <ul>
-            ${formattedDates.map(date => `<li>${date}</li>`).join('')}
+            ${(selectedDates && selectedDates.length > 0) ? 
+              formattedDates.map(date => `<li style="margin: 5px 0;">${date}</li>`).join('') : 
+              '<li>No dates specified</li>'}
           </ul>
           
-          <p><strong>Original Time Slots:</strong></p>
+          <p><strong>Cancelled Time Slots:</strong></p>
           <ul>
-            ${selectedTimeSlots.map(time => `<li>${time}</li>`).join('')}
+            ${(selectedTimeSlots && selectedTimeSlots.length > 0) ? 
+              selectedTimeSlots.map(time => `<li style="margin: 5px 0;">${time}</li>`).join('') : 
+              '<li>No time slots specified</li>'}
           </ul>
           
           <p><strong>Equipment:</strong></p>
           <ul>
-            ${selectedEquipment.map(equipment => `<li>${equipment}</li>`).join('')}
+            ${(selectedEquipment && selectedEquipment.length > 0) ? 
+              selectedEquipment.map(equipment => `<li style="margin: 5px 0;">${equipment}</li>`).join('') : 
+              '<li>No equipment specified</li>'}
           </ul>
           
           ${actionDate ? `<p><strong>Cancellation Date:</strong> ${new Date(actionDate).toLocaleDateString('en-US', { 
@@ -113,7 +132,8 @@ const generateEmailContent = (data: BookingNotificationRequest) => {
           })}</p>` : ''}
         </div>
         
-        <p>If you would like to reschedule or have any questions about this cancellation, please feel free to submit a new booking request or contact us directly.</p>
+        <p>If you would like to reschedule or have any questions about this cancellation, please contact us directly.</p>
+        <p>To reschedule, please email us at <a href="mailto:Maker@rockfordpubliclibrary.org" style="color: #2754C5;">Maker@rockfordpubliclibrary.org</a></p>
       `;
       break;
       
@@ -127,17 +147,23 @@ const generateEmailContent = (data: BookingNotificationRequest) => {
         <div style="background-color: #f8d7da; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #dc3545;">
           <p><strong>Missed Dates:</strong></p>
           <ul>
-            ${formattedDates.map(date => `<li>${date}</li>`).join('')}
+            ${(selectedDates && selectedDates.length > 0) ? 
+              formattedDates.map(date => `<li style="margin: 5px 0;">${date}</li>`).join('') : 
+              '<li>No dates specified</li>'}
           </ul>
           
           <p><strong>Missed Time Slots:</strong></p>
           <ul>
-            ${selectedTimeSlots.map(time => `<li>${time}</li>`).join('')}
+            ${(selectedTimeSlots && selectedTimeSlots.length > 0) ? 
+              selectedTimeSlots.map(time => `<li style="margin: 5px 0;">${time}</li>`).join('') : 
+              '<li>No time slots specified</li>'}
           </ul>
           
           <p><strong>Equipment:</strong></p>
           <ul>
-            ${selectedEquipment.map(equipment => `<li>${equipment}</li>`).join('')}
+            ${(selectedEquipment && selectedEquipment.length > 0) ? 
+              selectedEquipment.map(equipment => `<li style="margin: 5px 0;">${equipment}</li>`).join('') : 
+              '<li>No equipment specified</li>'}
           </ul>
           
           ${actionDate ? `<p><strong>Marked as Missed on:</strong> ${new Date(actionDate).toLocaleDateString('en-US', { 
@@ -149,6 +175,7 @@ const generateEmailContent = (data: BookingNotificationRequest) => {
         </div>
         
         <p>If you believe this was marked in error or would like to reschedule, please contact us or submit a new booking request.</p>
+        <p>To book a new session, please email us at <a href="mailto:Maker@rockfordpubliclibrary.org" style="color: #2754C5;">Maker@rockfordpubliclibrary.org</a></p>
       `;
       break;
       
