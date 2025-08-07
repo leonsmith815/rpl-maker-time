@@ -10,7 +10,7 @@ const Index = () => {
         <div className="container mx-auto px-4 text-center">
           <div className="flex justify-center mb-6">
             <img 
-              src="/lovable-uploads/004a9351-90ac-46eb-a06c-85b258b488e8.png" 
+              src="/lovable-uploads/d8a09194-793d-4ebf-b47a-b0ebaa058a79.png" 
               alt="Rockford Public Library" 
               className="h-16 md:h-20"
             />
