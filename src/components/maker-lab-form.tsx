@@ -47,6 +47,25 @@ export function MakerLabForm() {
       });
     }
   };
+
+  // Helper function to extract day from time slot
+  const getDayFromTimeSlot = (timeSlot: string): string => {
+    return timeSlot.split(' ')[0]; // Gets "Tuesday", "Wednesday", etc.
+  };
+
+  // Helper function to get day names from selected dates
+  const getSelectedDayNames = (): string[] => {
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return selectedDates.map(date => dayNames[date.getDay()]);
+  };
+
+  // Check if a time slot should be disabled
+  const isTimeSlotDisabled = (timeSlot: string): boolean => {
+    if (selectedDates.length === 0) return false; // If no dates selected, don't disable any slots
+    const slotDay = getDayFromTimeSlot(timeSlot);
+    const selectedDayNames = getSelectedDayNames();
+    return !selectedDayNames.includes(slotDay);
+  };
   const handleEquipmentSelect = (item: string) => {
     setSelectedEquipment(item);
   };
@@ -321,7 +340,7 @@ export function MakerLabForm() {
             </div>
             <div className="p-8 bg-gradient-section rounded-2xl border border-border/50 shadow-float">
               <p className="text-muted-foreground text-lg mb-2 text-center">
-                Select 1-3 preferred time slots. You will be contacted based on availability.
+                Select 1-3 preferred time slots. {selectedDates.length > 0 ? "Only slots for your selected days are available." : "Please select dates first to see available time slots."}
               </p>
               <div className="text-center mb-6">
                 <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
@@ -329,7 +348,7 @@ export function MakerLabForm() {
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {timeSlots.map(slot => <TimeSlotCard key={slot} time={slot} isSelected={selectedTimeSlots.includes(slot)} onSelect={() => handleTimeSlotSelect(slot)} />)}
+                {timeSlots.map(slot => <TimeSlotCard key={slot} time={slot} isSelected={selectedTimeSlots.includes(slot)} onSelect={() => handleTimeSlotSelect(slot)} disabled={isTimeSlotDisabled(slot)} />)}
               </div>
             </div>
           </div>

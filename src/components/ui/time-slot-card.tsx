@@ -6,16 +6,21 @@ interface TimeSlotCardProps {
   time: string;
   isSelected: boolean;
   onSelect: () => void;
+  disabled?: boolean;
 }
 
-export function TimeSlotCard({ time, isSelected, onSelect }: TimeSlotCardProps) {
+export function TimeSlotCard({ time, isSelected, onSelect, disabled = false }: TimeSlotCardProps) {
   return (
     <Card 
       className={cn(
-        "p-3 cursor-pointer transition-all duration-200 hover:shadow-soft",
-        isSelected ? "bg-gradient-hero text-primary-foreground shadow-glow" : "bg-gradient-card hover:bg-secondary"
+        "p-3 transition-all duration-200",
+        disabled 
+          ? "bg-muted/50 text-muted-foreground cursor-not-allowed opacity-50" 
+          : "cursor-pointer hover:shadow-soft",
+        !disabled && isSelected ? "bg-gradient-hero text-primary-foreground shadow-glow" : "",
+        !disabled && !isSelected ? "bg-gradient-card hover:bg-secondary" : ""
       )}
-      onClick={onSelect}
+      onClick={disabled ? undefined : onSelect}
     >
       <div className="text-sm font-medium text-center">
         {time}
