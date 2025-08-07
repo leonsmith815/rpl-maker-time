@@ -14,6 +14,7 @@ export default function AdminAuth() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -36,6 +37,53 @@ export default function AdminAuth() {
 
     checkAuth();
   }, [navigate]);
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/admin-auth`
+        }
+      });
+
+      if (signUpError) {
+        setError(signUpError.message);
+        return;
+      }
+
+      if (data.user) {
+        // Assign admin role to the user
+        const { error: roleError } = await supabase
+          .from("user_roles")
+          .insert({
+            user_id: data.user.id,
+            role: "admin"
+          });
+
+        if (roleError) {
+          setError("Failed to assign admin role. Please contact support.");
+          return;
+        }
+
+        toast({
+          title: "Account Created",
+          description: "Admin account created successfully. You can now sign in.",
+        });
+        
+        setIsSignUp(false);
+      }
+    } catch (err) {
+      setError("An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,7 +140,7 @@ export default function AdminAuth() {
           </div>
           <h1 className="text-2xl font-bold text-foreground">Admin Access</h1>
           <p className="text-muted-foreground mt-2">
-            Sign in to access the admin dashboard
+            {isSignUp ? "Create your admin account" : "Sign in to access the admin dashboard"}
           </p>
         </div>
 
@@ -100,11 +148,11 @@ export default function AdminAuth() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Lock className="w-5 h-5" />
-              Admin Sign In
+              {isSignUp ? "Create Admin Account" : "Admin Sign In"}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSignIn} className="space-y-4">
+            <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
               {error && (
                 <Alert variant="destructive">
                   <AlertDescription>{error}</AlertDescription>
@@ -116,7 +164,7 @@ export default function AdminAuth() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@example.com"
+                  placeholder="leonsmith30@makerlab.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -140,8 +188,25 @@ export default function AdminAuth() {
                 className="w-full"
                 disabled={isLoading}
               >
-                {isLoading ? "Signing in..." : "Sign In"}
+                {isLoading 
+                  ? (isSignUp ? "Creating Account..." : "Signing in...") 
+                  : (isSignUp ? "Create Account" : "Sign In")
+                }
               </Button>
+              
+              <div className="text-center">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setIsSignUp(!isSignUp)}
+                  className="text-sm text-muted-foreground"
+                >
+                  {isSignUp 
+                    ? "Already have an account? Sign in" 
+                    : "Need to create an account? Sign up"
+                  }
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
