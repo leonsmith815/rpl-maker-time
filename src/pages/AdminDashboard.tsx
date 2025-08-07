@@ -13,7 +13,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Download, LogOut, FileText, Users, ChevronDown, Trash2, CalendarIcon } from "lucide-react";
+import { Download, LogOut, FileText, Users, ChevronDown, Trash2, CalendarIcon, Clock } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -121,9 +123,17 @@ export default function AdminDashboard() {
     }
   };
 
-  const updateBookingStatus = async (bookingId: string, newStatus: string, scheduledDate?: Date) => {
+  const updateBookingStatus = async (bookingId: string, newStatus: string, scheduledDate?: Date, scheduledTime?: string) => {
     try {
-      const actionDate = scheduledDate ? scheduledDate.toISOString() : new Date().toISOString();
+      let actionDate = scheduledDate ? scheduledDate.toISOString() : new Date().toISOString();
+      
+      // If time is provided, combine it with the date
+      if (scheduledDate && scheduledTime) {
+        const [hours, minutes] = scheduledTime.split(':').map(Number);
+        const dateWithTime = new Date(scheduledDate);
+        dateWithTime.setHours(hours, minutes, 0, 0);
+        actionDate = dateWithTime.toISOString();
+      }
       
       const { error } = await supabase
         .from("maker_lab_bookings")
@@ -173,7 +183,7 @@ export default function AdminDashboard() {
 
       toast({
         title: "Status Updated",
-        description: `Booking status changed to ${newStatus}${scheduledDate ? ` for ${format(scheduledDate, 'PPP')}` : ''}. Email notification sent to customer.`,
+        description: `Booking status changed to ${newStatus}${scheduledDate ? ` for ${format(scheduledDate, 'PPP')}${scheduledTime ? ` at ${scheduledTime}` : ''}` : ''}. Email notification sent to customer.`,
       });
     } catch (error) {
       toast({
@@ -186,13 +196,15 @@ export default function AdminDashboard() {
 
   const ScheduleButton = ({ bookingId }: { bookingId: string }) => {
     const [date, setDate] = useState<Date>();
+    const [time, setTime] = useState<string>("");
     const [open, setOpen] = useState(false);
 
     const handleSchedule = () => {
       if (date) {
-        updateBookingStatus(bookingId, "scheduled", date);
+        updateBookingStatus(bookingId, "scheduled", date, time);
         setOpen(false);
         setDate(undefined);
+        setTime("");
       }
     };
 
@@ -205,7 +217,7 @@ export default function AdminDashboard() {
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <div className="p-4 space-y-4">
-            <h4 className="font-medium">Select Schedule Date</h4>
+            <h4 className="font-medium">Select Schedule Date & Time</h4>
             <Calendar
               mode="single"
               selected={date}
@@ -213,6 +225,19 @@ export default function AdminDashboard() {
               initialFocus
               className="pointer-events-auto"
             />
+            <div className="space-y-2">
+              <Label htmlFor="schedule-time" className="text-sm font-medium">
+                <Clock className="h-4 w-4 inline mr-1" />
+                Appointment Time
+              </Label>
+              <Input
+                id="schedule-time"
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="w-full"
+              />
+            </div>
             <div className="flex gap-2">
               <Button 
                 onClick={handleSchedule} 
@@ -239,13 +264,15 @@ export default function AdminDashboard() {
 
   const CancelButton = ({ bookingId }: { bookingId: string }) => {
     const [date, setDate] = useState<Date>();
+    const [time, setTime] = useState<string>("");
     const [open, setOpen] = useState(false);
 
     const handleCancel = () => {
       if (date) {
-        updateBookingStatus(bookingId, "cancelled", date);
+        updateBookingStatus(bookingId, "cancelled", date, time);
         setOpen(false);
         setDate(undefined);
+        setTime("");
       }
     };
 
@@ -258,7 +285,7 @@ export default function AdminDashboard() {
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <div className="p-4 space-y-4">
-            <h4 className="font-medium">Select Cancellation Date</h4>
+            <h4 className="font-medium">Select Cancellation Date & Time</h4>
             <Calendar
               mode="single"
               selected={date}
@@ -266,6 +293,19 @@ export default function AdminDashboard() {
               initialFocus
               className="pointer-events-auto"
             />
+            <div className="space-y-2">
+              <Label htmlFor="cancel-time" className="text-sm font-medium">
+                <Clock className="h-4 w-4 inline mr-1" />
+                Cancellation Time
+              </Label>
+              <Input
+                id="cancel-time"
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="w-full"
+              />
+            </div>
             <div className="flex gap-2">
               <Button 
                 onClick={handleCancel} 
@@ -292,13 +332,15 @@ export default function AdminDashboard() {
 
   const MissedButton = ({ bookingId }: { bookingId: string }) => {
     const [date, setDate] = useState<Date>();
+    const [time, setTime] = useState<string>("");
     const [open, setOpen] = useState(false);
 
     const handleMissed = () => {
       if (date) {
-        updateBookingStatus(bookingId, "missed", date);
+        updateBookingStatus(bookingId, "missed", date, time);
         setOpen(false);
         setDate(undefined);
+        setTime("");
       }
     };
 
@@ -311,7 +353,7 @@ export default function AdminDashboard() {
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <div className="p-4 space-y-4">
-            <h4 className="font-medium">Select Missed Date</h4>
+            <h4 className="font-medium">Select Missed Date & Time</h4>
             <Calendar
               mode="single"
               selected={date}
@@ -319,6 +361,19 @@ export default function AdminDashboard() {
               initialFocus
               className="pointer-events-auto"
             />
+            <div className="space-y-2">
+              <Label htmlFor="missed-time" className="text-sm font-medium">
+                <Clock className="h-4 w-4 inline mr-1" />
+                Missed Time
+              </Label>
+              <Input
+                id="missed-time"
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="w-full"
+              />
+            </div>
             <div className="flex gap-2">
               <Button 
                 onClick={handleMissed} 
