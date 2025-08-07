@@ -26,20 +26,6 @@ export function MakerLabForm() {
   const {
     toast
   } = useToast();
-  // Helper function to get available time slots based on selected dates
-  const getAvailableTimeSlots = () => {
-    if (selectedDates.length === 0) return [];
-    
-    const selectedDayNames = selectedDates.map(date => {
-      const dayName = format(date, "EEEE");
-      return dayName;
-    });
-    
-    return timeSlots.filter(slot => {
-      return selectedDayNames.some(dayName => slot.startsWith(dayName));
-    });
-  };
-
   const handleTimeSlotSelect = (slot: string) => {
     if (selectedTimeSlots.includes(slot)) {
       setSelectedTimeSlots(prev => prev.filter(s => s !== slot));
@@ -55,22 +41,15 @@ export function MakerLabForm() {
   };
   const handleEquipmentSelect = (item: string) => {
     if (selectedEquipment.includes(item)) {
-      setSelectedEquipment([]);
+      setSelectedEquipment(prev => prev.filter(e => e !== item));
     } else {
-      setSelectedEquipment([item]);
+      setSelectedEquipment(prev => [...prev, item]);
     }
   };
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
     if (selectedDates.some(d => d.toDateString() === date.toDateString())) {
       setSelectedDates(prev => prev.filter(d => d.toDateString() !== date.toDateString()));
-      // Clear time slots that no longer match selected dates
-      const newDayNames = selectedDates
-        .filter(d => d.toDateString() !== date.toDateString())
-        .map(d => format(d, "EEEE"));
-      setSelectedTimeSlots(prev => 
-        prev.filter(slot => newDayNames.some(dayName => slot.startsWith(dayName)))
-      );
     } else if (selectedDates.length < 3) {
       setSelectedDates(prev => [...prev, date]);
     } else {
@@ -114,7 +93,7 @@ export function MakerLabForm() {
     if (selectedEquipment.length === 0) {
       toast({
         title: "Please select equipment",
-        description: "You must select one piece of equipment.",
+        description: "You must select at least one piece of equipment.",
         variant: "destructive"
       });
       return;
@@ -346,25 +325,7 @@ export function MakerLabForm() {
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {selectedDates.length === 0 ? (
-                  <div className="col-span-full text-center py-8 text-muted-foreground">
-                    Please select dates first to view available time slots
-                  </div>
-                ) : (
-                  timeSlots.map(slot => {
-                    const availableSlots = getAvailableTimeSlots();
-                    const isAvailable = availableSlots.includes(slot);
-                    return (
-                      <TimeSlotCard 
-                        key={slot} 
-                        time={slot} 
-                        isSelected={selectedTimeSlots.includes(slot)} 
-                        onSelect={() => handleTimeSlotSelect(slot)}
-                        disabled={!isAvailable}
-                      />
-                    );
-                  })
-                )}
+                {timeSlots.map(slot => <TimeSlotCard key={slot} time={slot} isSelected={selectedTimeSlots.includes(slot)} onSelect={() => handleTimeSlotSelect(slot)} />)}
               </div>
             </div>
           </div>
@@ -380,9 +341,6 @@ export function MakerLabForm() {
               </h2>
             </div>
             <div className="p-8 bg-gradient-section rounded-2xl border border-border/50 shadow-float">
-              <p className="text-muted-foreground text-lg mb-6 text-center">
-                Select one piece of equipment you'd like to use during your session.
-              </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {equipment.map(item => <EquipmentCard key={item} name={item} isSelected={selectedEquipment.includes(item)} onSelect={() => handleEquipmentSelect(item)} disabled={item === "Laser Cutter"} />)}
               </div>
