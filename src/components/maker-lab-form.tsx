@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,16 +23,9 @@ export function MakerLabForm() {
     email: "",
     phone: ""
   });
-  const { toast } = useToast();
-
-  // Auto-assign current date on component mount
-  useEffect(() => {
-    setFormData(prev => ({
-      ...prev,
-      currentDate: format(new Date(), "MMMM do, yyyy")
-    }));
-  }, []);
-
+  const {
+    toast
+  } = useToast();
   // Helper function to get available time slots based on selected dates
   const getAvailableTimeSlots = () => {
     if (selectedDates.length === 0) return [];
@@ -206,7 +199,7 @@ export function MakerLabForm() {
       setAccessOption("");
       setFormData({
         name: "",
-        currentDate: format(new Date(), "MMMM do, yyyy"),
+        currentDate: "",
         email: "",
         phone: ""
       });
@@ -427,14 +420,18 @@ export function MakerLabForm() {
 
                 <div className="space-y-3">
                   <Label htmlFor="currentDate" className="text-base font-semibold text-foreground flex items-center gap-2">
-                    <span className="text-primary">•</span> Date of Submission
+                    <span className="text-primary">•</span> Current Date *
                   </Label>
                   <Input 
                     id="currentDate" 
-                    type="text" 
+                    type="date" 
                     value={formData.currentDate} 
-                    readOnly
-                    className="h-12 bg-muted/50 border-border/50 rounded-xl text-base cursor-not-allowed" 
+                    onChange={e => setFormData(prev => ({
+                      ...prev,
+                      currentDate: e.target.value
+                    }))} 
+                    className="h-12 bg-background/70 border-border/50 focus:border-primary focus:ring-primary/20 rounded-xl text-base" 
+                    required 
                   />
                 </div>
 
