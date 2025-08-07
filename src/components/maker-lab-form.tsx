@@ -135,6 +135,9 @@ export function MakerLabForm() {
       // Convert dates to long format for database storage
       const dateStrings = selectedDates.map(date => format(date, "EEEE, MMMM do, yyyy"));
       
+      // Convert current date from MM/dd/yyyy to YYYY-MM-DD for database
+      const currentDateForDb = format(new Date(), "yyyy-MM-dd");
+      
       const { data, error } = await supabase
         .from('maker_lab_bookings')
         .insert({
@@ -143,7 +146,7 @@ export function MakerLabForm() {
           selected_time_slots: selectedTimeSlots,
           selected_equipment: [selectedEquipment],
           full_name: formData.name,
-          preferred_date: formData.currentDate,
+          preferred_date: currentDateForDb,
           email: formData.email,
           phone: formData.phone,
           status: 'pending'
@@ -170,7 +173,7 @@ export function MakerLabForm() {
             selectedDates: dateStrings,
             selectedTimeSlots: selectedTimeSlots,
             selectedEquipment: [selectedEquipment],
-            preferredDate: formData.currentDate
+            preferredDate: format(new Date(), "yyyy-MM-dd")
           }
         });
 
