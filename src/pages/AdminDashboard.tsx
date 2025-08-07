@@ -119,7 +119,11 @@ export default function AdminDashboard() {
   };
 
   const exportToPDF = () => {
-    const doc = new jsPDF();
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4'
+    });
     
     doc.setFontSize(20);
     doc.text("Maker Lab Booking Requests", 20, 20);
