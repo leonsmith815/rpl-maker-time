@@ -55,9 +55,9 @@ export function MakerLabForm() {
   };
   const handleEquipmentSelect = (item: string) => {
     if (selectedEquipment.includes(item)) {
-      setSelectedEquipment(prev => prev.filter(e => e !== item));
+      setSelectedEquipment([]);
     } else {
-      setSelectedEquipment(prev => [...prev, item]);
+      setSelectedEquipment([item]);
     }
   };
   const handleDateSelect = (date: Date | undefined) => {
@@ -114,7 +114,7 @@ export function MakerLabForm() {
     if (selectedEquipment.length === 0) {
       toast({
         title: "Please select equipment",
-        description: "You must select at least one piece of equipment.",
+        description: "You must select one piece of equipment.",
         variant: "destructive"
       });
       return;
@@ -380,6 +380,9 @@ export function MakerLabForm() {
               </h2>
             </div>
             <div className="p-8 bg-gradient-section rounded-2xl border border-border/50 shadow-float">
+              <p className="text-muted-foreground text-lg mb-6 text-center">
+                Select one piece of equipment you'd like to use during your session.
+              </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {equipment.map(item => <EquipmentCard key={item} name={item} isSelected={selectedEquipment.includes(item)} onSelect={() => handleEquipmentSelect(item)} disabled={item === "Laser Cutter"} />)}
               </div>
