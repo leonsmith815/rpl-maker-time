@@ -505,11 +505,12 @@ export default function AdminDashboard() {
       formatTimes(booking.selected_time_slots),
       booking.status,
       new Date(booking.created_at).toLocaleDateString(),
-      booking.action_date ? new Date(booking.action_date).toLocaleDateString() : "N/A",
+      booking.action_date ? new Date(booking.action_date).toLocaleDateString() + " " + 
+        new Date(booking.action_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "N/A",
     ]);
 
     autoTable(doc, {
-      head: [["Name", "Email", "Phone", "Access", "Equipment", "Dates", "Times", "Status", "Submitted", "Action Date"]],
+      head: [["Name", "Email", "Phone", "Access", "Equipment", "Dates", "Times", "Status", "Submitted", "Action Date & Time"]],
       body: tableData,
       startY: 40,
       styles: { 
@@ -523,7 +524,7 @@ export default function AdminDashboard() {
         5: { cellWidth: 35 }, // Dates
         6: { cellWidth: 35 }, // Times
         8: { cellWidth: 20 }, // Submitted
-        9: { cellWidth: 20 }, // Action Date
+        9: { cellWidth: 25 }, // Action Date & Time
       },
       headStyles: {
         fontSize: 9,
@@ -728,12 +729,13 @@ export default function AdminDashboard() {
                        <TableCell>
                          {new Date(booking.created_at).toLocaleDateString()}
                        </TableCell>
-                        <TableCell>
-                          {booking.action_date 
-                            ? new Date(booking.action_date).toLocaleDateString()
-                            : "N/A"
-                          }
-                        </TableCell>
+                         <TableCell>
+                           {booking.action_date 
+                             ? new Date(booking.action_date).toLocaleDateString() + " " + 
+                               new Date(booking.action_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                             : "N/A"
+                           }
+                         </TableCell>
                         <TableCell>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
