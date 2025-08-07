@@ -50,6 +50,7 @@ export type Database = {
       maker_lab_bookings: {
         Row: {
           access_option: string
+          action_date: string | null
           created_at: string
           email: string
           full_name: string
@@ -65,6 +66,7 @@ export type Database = {
         }
         Insert: {
           access_option: string
+          action_date?: string | null
           created_at?: string
           email: string
           full_name: string
@@ -80,6 +82,7 @@ export type Database = {
         }
         Update: {
           access_option?: string
+          action_date?: string | null
           created_at?: string
           email?: string
           full_name?: string

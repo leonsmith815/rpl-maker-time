@@ -35,6 +35,7 @@ interface Booking {
   selected_time_slots: string[];
   status: string;
   created_at: string;
+  action_date: string | null;
 }
 
 export default function AdminDashboard() {
@@ -99,7 +100,10 @@ export default function AdminDashboard() {
     try {
       const { error } = await supabase
         .from("maker_lab_bookings")
-        .update({ status: newStatus })
+        .update({ 
+          status: newStatus,
+          action_date: new Date().toISOString()
+        })
         .eq("id", bookingId);
 
       if (error) {
@@ -109,7 +113,7 @@ export default function AdminDashboard() {
       // Update local state
       setBookings(bookings.map(booking => 
         booking.id === bookingId 
-          ? { ...booking, status: newStatus }
+          ? { ...booking, status: newStatus, action_date: new Date().toISOString() }
           : booking
       ));
 
@@ -301,8 +305,9 @@ export default function AdminDashboard() {
                     <TableHead>Equipment</TableHead>
                     <TableHead>Dates</TableHead>
                     <TableHead>Times</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Submitted</TableHead>
+                     <TableHead>Status</TableHead>
+                     <TableHead>Submitted</TableHead>
+                     <TableHead>Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -373,9 +378,15 @@ export default function AdminDashboard() {
                            </DropdownMenuContent>
                          </DropdownMenu>
                        </TableCell>
-                      <TableCell>
-                        {new Date(booking.created_at).toLocaleDateString()}
-                      </TableCell>
+                       <TableCell>
+                         {new Date(booking.created_at).toLocaleDateString()}
+                       </TableCell>
+                       <TableCell>
+                         {booking.action_date 
+                           ? new Date(booking.action_date).toLocaleDateString()
+                           : "N/A"
+                         }
+                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
