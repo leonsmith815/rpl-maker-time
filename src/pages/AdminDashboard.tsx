@@ -525,7 +525,9 @@ export default function AdminDashboard() {
                              >
                                Pending
                              </DropdownMenuItem>
-                              <ScheduleButton bookingId={booking.id} />
+                              <DropdownMenuItem asChild>
+                                <ScheduleButton bookingId={booking.id} />
+                              </DropdownMenuItem>
                              <DropdownMenuItem 
                                onClick={() => updateBookingStatus(booking.id, "completed")}
                                className="cursor-pointer"
