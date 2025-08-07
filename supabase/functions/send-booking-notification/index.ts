@@ -80,7 +80,12 @@ const generateEmailContent = (data: BookingNotificationRequest) => {
             weekday: 'long', 
             year: 'numeric', 
             month: 'long', 
-            day: 'numeric' 
+            day: 'numeric',
+            timeZone: 'America/Chicago'
+          })} at ${new Date(actionDate).toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            timeZone: 'America/Chicago'
           })}</p>` : ''}
         </div>
         
@@ -128,7 +133,12 @@ const generateEmailContent = (data: BookingNotificationRequest) => {
             weekday: 'long', 
             year: 'numeric', 
             month: 'long', 
-            day: 'numeric' 
+            day: 'numeric',
+            timeZone: 'America/Chicago'
+          })} at ${new Date(actionDate).toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            timeZone: 'America/Chicago'
           })}</p>` : ''}
         </div>
         
@@ -170,7 +180,12 @@ const generateEmailContent = (data: BookingNotificationRequest) => {
             weekday: 'long', 
             year: 'numeric', 
             month: 'long', 
-            day: 'numeric' 
+            day: 'numeric',
+            timeZone: 'America/Chicago'
+          })} at ${new Date(actionDate).toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            timeZone: 'America/Chicago'
           })}</p>` : ''}
         </div>
         
