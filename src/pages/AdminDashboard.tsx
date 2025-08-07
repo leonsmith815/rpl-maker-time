@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Download, LogOut, FileText, Users, ChevronDown, Trash2 } from "lucide-react";
+import { Download, LogOut, FileText, Users, ChevronDown, Trash2, CalendarIcon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +31,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -113,13 +121,15 @@ export default function AdminDashboard() {
     }
   };
 
-  const updateBookingStatus = async (bookingId: string, newStatus: string) => {
+  const updateBookingStatus = async (bookingId: string, newStatus: string, scheduledDate?: Date) => {
     try {
+      const actionDate = scheduledDate ? scheduledDate.toISOString() : new Date().toISOString();
+      
       const { error } = await supabase
         .from("maker_lab_bookings")
         .update({ 
           status: newStatus,
-          action_date: new Date().toISOString()
+          action_date: actionDate
         })
         .eq("id", bookingId);
 
@@ -130,13 +140,13 @@ export default function AdminDashboard() {
       // Update local state
       setBookings(bookings.map(booking => 
         booking.id === bookingId 
-          ? { ...booking, status: newStatus, action_date: new Date().toISOString() }
+          ? { ...booking, status: newStatus, action_date: actionDate }
           : booking
       ));
 
       toast({
         title: "Status Updated",
-        description: `Booking status changed to ${newStatus}`,
+        description: `Booking status changed to ${newStatus}${scheduledDate ? ` for ${format(scheduledDate, 'PPP')}` : ''}`,
       });
     } catch (error) {
       toast({
@@ -145,6 +155,59 @@ export default function AdminDashboard() {
         variant: "destructive",
       });
     }
+  };
+
+  const ScheduleButton = ({ bookingId }: { bookingId: string }) => {
+    const [date, setDate] = useState<Date>();
+    const [open, setOpen] = useState(false);
+
+    const handleSchedule = () => {
+      if (date) {
+        updateBookingStatus(bookingId, "scheduled", date);
+        setOpen(false);
+        setDate(undefined);
+      }
+    };
+
+    return (
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="ghost" className="cursor-pointer w-full justify-start">
+            Scheduled
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <div className="p-4 space-y-4">
+            <h4 className="font-medium">Select Schedule Date</h4>
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={setDate}
+              initialFocus
+              className="pointer-events-auto"
+            />
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleSchedule} 
+                disabled={!date}
+                size="sm"
+                className="flex-1"
+              >
+                <CalendarIcon className="h-4 w-4 mr-2" />
+                Schedule
+              </Button>
+              <Button 
+                onClick={() => setOpen(false)} 
+                variant="outline" 
+                size="sm"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+    );
   };
 
   const deleteBooking = async (bookingId: string, bookingName: string) => {
@@ -462,12 +525,7 @@ export default function AdminDashboard() {
                              >
                                Pending
                              </DropdownMenuItem>
-                             <DropdownMenuItem 
-                               onClick={() => updateBookingStatus(booking.id, "scheduled")}
-                               className="cursor-pointer"
-                             >
-                               Scheduled
-                             </DropdownMenuItem>
+                              <ScheduleButton bookingId={booking.id} />
                              <DropdownMenuItem 
                                onClick={() => updateBookingStatus(booking.id, "completed")}
                                className="cursor-pointer"
