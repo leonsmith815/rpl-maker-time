@@ -85,6 +85,12 @@ export default function AdminDashboard() {
       }
 
       setBookings(data || []);
+      console.log("Booking data:", data?.slice(0, 2).map(b => ({ 
+        id: b.id, 
+        name: b.full_name, 
+        selected_dates: b.selected_dates,
+        dateTypes: b.selected_dates?.map(d => typeof d)
+      })));
     } catch (error) {
       toast({
         title: "Error",
