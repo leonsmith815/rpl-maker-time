@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,9 +23,16 @@ export function MakerLabForm() {
     email: "",
     phone: ""
   });
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+
+  // Auto-assign current date on component mount
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      currentDate: format(new Date(), "MMMM do, yyyy")
+    }));
+  }, []);
+
   // Helper function to get available time slots based on selected dates
   const getAvailableTimeSlots = () => {
     if (selectedDates.length === 0) return [];
@@ -199,7 +206,7 @@ export function MakerLabForm() {
       setAccessOption("");
       setFormData({
         name: "",
-        currentDate: "",
+        currentDate: format(new Date(), "MMMM do, yyyy"),
         email: "",
         phone: ""
       });
