@@ -172,29 +172,62 @@ export default function AdminDashboard() {
     doc.setFontSize(10);
     doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 30);
 
+    const formatDates = (dates: string[]) => {
+      return dates.map(date => {
+        const d = new Date(date);
+        return d.toLocaleDateString('en-US', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+      }).join('\n');
+    };
+
+    const formatTimes = (dates: string[], times: string[]) => {
+      if (dates.length === times.length) {
+        return dates.map((date, index) => {
+          const d = new Date(date);
+          const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
+          return `${dayName} ${times[index]}`;
+        }).join('\n');
+      }
+      return times.join('\n');
+    };
+
     const tableData = bookings.map(booking => [
       booking.full_name,
       booking.email,
       booking.phone || "N/A",
       booking.access_option,
       booking.selected_equipment.join(", "),
-      booking.selected_dates.join(", "),
-      booking.selected_time_slots.join(", "),
+      formatDates(booking.selected_dates),
+      formatTimes(booking.selected_dates, booking.selected_time_slots),
       booking.status,
       new Date(booking.created_at).toLocaleDateString(),
+      booking.action_date ? new Date(booking.action_date).toLocaleDateString() : "N/A",
     ]);
 
     autoTable(doc, {
-      head: [["Name", "Email", "Phone", "Access", "Equipment", "Dates", "Times", "Status", "Submitted"]],
+      head: [["Name", "Email", "Phone", "Access", "Equipment", "Dates", "Times", "Status", "Submitted", "Action Date"]],
       body: tableData,
       startY: 40,
-      styles: { fontSize: 8 },
+      styles: { 
+        fontSize: 8,
+        cellPadding: 2,
+      },
       columnStyles: {
-        1: { cellWidth: 35 },
-        2: { cellWidth: 20 },
-        4: { cellWidth: 30 },
-        5: { cellWidth: 20 },
-        6: { cellWidth: 20 },
+        1: { cellWidth: 30 }, // Email
+        2: { cellWidth: 20 }, // Phone
+        4: { cellWidth: 25 }, // Equipment
+        5: { cellWidth: 35 }, // Dates
+        6: { cellWidth: 35 }, // Times
+        8: { cellWidth: 20 }, // Submitted
+        9: { cellWidth: 20 }, // Action Date
+      },
+      headStyles: {
+        fontSize: 9,
+        fontStyle: 'bold',
       },
     });
 
