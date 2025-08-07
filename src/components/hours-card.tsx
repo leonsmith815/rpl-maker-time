@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock } from "lucide-react";
+import { StatusIndicator } from "@/components/status-indicator";
 
 export function HoursCard() {
   return (
@@ -36,13 +37,19 @@ export function HoursCard() {
               </span>
             </div>
           </div>
+
+          <div className="group/item p-4 rounded-xl bg-background/50 border border-border/50 hover:border-primary/30 transition-all duration-300">
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground font-medium">Sunday</span>
+              <span className="font-bold text-lg bg-gradient-hero bg-clip-text text-transparent">
+                Closed
+              </span>
+            </div>
+          </div>
         </div>
         
         <div className="text-center pt-2">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-sm font-medium text-primary">Currently Open</span>
-          </div>
+          <StatusIndicator />
         </div>
       </CardContent>
     </Card>

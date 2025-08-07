@@ -11,9 +11,9 @@ const equipmentData = [
     description: "High-precision 3D printing for prototypes and models"
   },
   {
-    name: "Laser Cutter", 
-    image: laserCutter,
-    description: "Precision cutting and engraving for various materials"
+    name: "DTF Printer", 
+    image: "/lovable-uploads/1ed23010-8854-4b8c-88de-4c9cf80c23c7.png",
+    description: "Direct-to-film printing for high-quality custom designs on textiles"
   },
   {
     name: "Recording Studio",
