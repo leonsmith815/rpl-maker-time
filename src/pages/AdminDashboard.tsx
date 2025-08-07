@@ -13,7 +13,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Download, LogOut, FileText, Users } from "lucide-react";
+import { Download, LogOut, FileText, Users, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -86,6 +92,37 @@ export default function AdminDashboard() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const updateBookingStatus = async (bookingId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from("maker_lab_bookings")
+        .update({ status: newStatus })
+        .eq("id", bookingId);
+
+      if (error) {
+        throw error;
+      }
+
+      // Update local state
+      setBookings(bookings.map(booking => 
+        booking.id === bookingId 
+          ? { ...booking, status: newStatus }
+          : booking
+      ));
+
+      toast({
+        title: "Status Updated",
+        description: `Booking status changed to ${newStatus}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update booking status",
+        variant: "destructive",
+      });
     }
   };
 
@@ -294,11 +331,48 @@ export default function AdminDashboard() {
                           {booking.selected_time_slots.join(", ")}
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <Badge variant={booking.status === "pending" ? "outline" : "default"}>
-                          {booking.status}
-                        </Badge>
-                      </TableCell>
+                       <TableCell>
+                         <DropdownMenu>
+                           <DropdownMenuTrigger asChild>
+                             <Button 
+                               variant="outline" 
+                               size="sm" 
+                               className="gap-2 min-w-24 justify-between bg-card"
+                             >
+                               <Badge variant={booking.status === "pending" ? "outline" : "default"}>
+                                 {booking.status}
+                               </Badge>
+                               <ChevronDown className="h-3 w-3" />
+                             </Button>
+                           </DropdownMenuTrigger>
+                           <DropdownMenuContent className="bg-card border shadow-lg z-50">
+                             <DropdownMenuItem 
+                               onClick={() => updateBookingStatus(booking.id, "pending")}
+                               className="cursor-pointer"
+                             >
+                               Pending
+                             </DropdownMenuItem>
+                             <DropdownMenuItem 
+                               onClick={() => updateBookingStatus(booking.id, "scheduled")}
+                               className="cursor-pointer"
+                             >
+                               Scheduled
+                             </DropdownMenuItem>
+                             <DropdownMenuItem 
+                               onClick={() => updateBookingStatus(booking.id, "completed")}
+                               className="cursor-pointer"
+                             >
+                               Completed
+                             </DropdownMenuItem>
+                             <DropdownMenuItem 
+                               onClick={() => updateBookingStatus(booking.id, "cancelled")}
+                               className="cursor-pointer"
+                             >
+                               Cancelled
+                             </DropdownMenuItem>
+                           </DropdownMenuContent>
+                         </DropdownMenu>
+                       </TableCell>
                       <TableCell>
                         {new Date(booking.created_at).toLocaleDateString()}
                       </TableCell>
