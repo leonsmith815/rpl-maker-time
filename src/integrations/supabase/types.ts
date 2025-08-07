@@ -166,6 +166,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_admin_role: {
+        Args: { _email: string }
+        Returns: undefined
+      }
+      create_admin_user_if_not_exists: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _user_id: string
