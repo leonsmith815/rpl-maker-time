@@ -13,13 +13,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Download, LogOut, FileText, Users, ChevronDown } from "lucide-react";
+import { Download, LogOut, FileText, Users, ChevronDown, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -131,6 +142,33 @@ export default function AdminDashboard() {
       toast({
         title: "Error",
         description: "Failed to update booking status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteBooking = async (bookingId: string, bookingName: string) => {
+    try {
+      const { error } = await supabase
+        .from("maker_lab_bookings")
+        .delete()
+        .eq("id", bookingId);
+
+      if (error) {
+        throw error;
+      }
+
+      // Update local state by removing the deleted booking
+      setBookings(bookings.filter(booking => booking.id !== bookingId));
+
+      toast({
+        title: "Booking Deleted",
+        description: `${bookingName}'s booking has been permanently deleted`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete booking",
         variant: "destructive",
       });
     }
@@ -347,7 +385,8 @@ export default function AdminDashboard() {
                      <TableHead>Status</TableHead>
                      <TableHead>Submitted</TableHead>
                      <TableHead>Action</TableHead>
-                  </TableRow>
+                     <TableHead>Delete</TableHead>
+                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {bookings.map((booking) => (
@@ -456,13 +495,44 @@ export default function AdminDashboard() {
                        <TableCell>
                          {new Date(booking.created_at).toLocaleDateString()}
                        </TableCell>
-                       <TableCell>
-                         {booking.action_date 
-                           ? new Date(booking.action_date).toLocaleDateString()
-                           : "N/A"
-                         }
-                       </TableCell>
-                    </TableRow>
+                        <TableCell>
+                          {booking.action_date 
+                            ? new Date(booking.action_date).toLocaleDateString()
+                            : "N/A"
+                          }
+                        </TableCell>
+                        <TableCell>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button 
+                                variant="destructive" 
+                                size="sm"
+                                className="gap-2"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Delete
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. This will permanently delete {booking.full_name}'s booking request and remove all associated data from the database.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => deleteBooking(booking.id, booking.full_name)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete Permanently
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </TableCell>
+                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
