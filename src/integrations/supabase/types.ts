@@ -239,6 +239,10 @@ export type Database = {
         Args: { request_id: string; assigned_user_id?: string }
         Returns: string
       }
+      promote_booking_request_to_confirmed_admin: {
+        Args: { request_id: string; assigned_user_id?: string }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "user"

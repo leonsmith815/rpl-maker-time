@@ -61,8 +61,8 @@ export const BookingRequestsTab = ({ onCountChange }: BookingRequestsTabProps = 
     try {
       console.log('🚀 Approving request:', requestId);
       
-      // Call the database function to promote the request to a confirmed booking
-      const { data, error } = await supabase.rpc('promote_booking_request_to_confirmed', {
+      // Call the admin function to promote the request (bypasses frequency check)
+      const { data, error } = await supabase.rpc('promote_booking_request_to_confirmed_admin', {
         request_id: requestId,
         assigned_user_id: null // Could assign to a specific user if needed
       });
