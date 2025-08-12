@@ -263,7 +263,7 @@ export function MakerLabForm() {
             </html>
           `;
 
-          await window.emailjs.send('service_c5hnxps', 'template_s5pm6ri', {
+          await window.emailjs.send('service_c5hnxps', 'template_s5pm6ri2', {
             to_email: formData.email,
             to_name: formData.name,
             subject: "RPL Maker Lab - Booking Confirmation",
