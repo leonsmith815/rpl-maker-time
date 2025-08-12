@@ -1,11 +1,11 @@
 import emailjs from '@emailjs/browser';
 import { format } from 'date-fns';
 
-// EmailJS Configuration - Replace these with your actual EmailJS credentials
+// EmailJS Configuration - Your actual credentials
 const EMAILJS_CONFIG = {
-  SERVICE_ID: 'YOUR_ACTUAL_SERVICE_ID', // Get this from your EmailJS dashboard
-  TEMPLATE_ID: 'YOUR_ACTUAL_TEMPLATE_ID', // Get this from your EmailJS dashboard  
-  PUBLIC_KEY: 'YOUR_ACTUAL_PUBLIC_KEY', // Get this from your EmailJS dashboard
+  SERVICE_ID: 'service_c5hnxps', // Your EmailJS Service ID
+  TEMPLATE_ID: 'template_2ss175v', // Your EmailJS Template ID  
+  PUBLIC_KEY: 'ExUWNRz9bRhzQFxBM', // Your EmailJS Public Key
 };
 
 interface BookingEmailData {
