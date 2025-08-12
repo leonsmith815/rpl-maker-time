@@ -1,7 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -147,6 +144,16 @@ const handler = async (req: Request): Promise<Response> => {
       customer: requestData.fullName
     });
 
+    // Get EmailJS credentials from environment
+    const EMAILJS_SERVICE_ID = Deno.env.get("EMAILJS_SERVICE_ID") || "service_c5hnxps";
+    const EMAILJS_TEMPLATE_ID = Deno.env.get("EMAILJS_TEMPLATE_ID") || "template_2ss175v";
+    const EMAILJS_PUBLIC_KEY = Deno.env.get("EMAILJS_PUBLIC_KEY") || "ExUWNRz9bRhzQFxBM";
+    const EMAILJS_PRIVATE_KEY = Deno.env.get("EMAILJS_PRIVATE_KEY");
+
+    if (!EMAILJS_PRIVATE_KEY) {
+      throw new Error("EMAILJS_PRIVATE_KEY environment variable is required for server-side EmailJS calls");
+    }
+
     // Format data for email
     const formattedDates = requestData.selectedDates.join(', ');
     const equipmentList = requestData.selectedEquipment.join(', ');
@@ -162,48 +169,61 @@ const handler = async (req: Request): Promise<Response> => {
       timeSlots
     );
 
-    console.log("📤 Sending email via Resend:", {
+    // Prepare EmailJS template parameters
+    const templateParams = {
+      to_name: requestData.fullName,
+      to_email: requestData.email,
+      from_name: 'Rockford Public Library Maker Lab',
+      from_email: 'Maker@rockfordpubliclibrary.org',
+      reply_to: 'Maker@rockfordpubliclibrary.org',
+      subject: emailSubject,
+      message: emailBody,
+      customer_name: requestData.fullName,
+      status: requestData.status,
+      selected_dates: formattedDates,
+      equipment: equipmentList,
+      time_slots: timeSlots
+    };
+
+    console.log("📤 Sending email via EmailJS:", {
+      service: EMAILJS_SERVICE_ID,
+      template: EMAILJS_TEMPLATE_ID,
       to: requestData.email,
-      subject: emailSubject,
-      from: "Maker Lab <Maker@rockfordpubliclibrary.org>"
+      subject: emailSubject
     });
 
-    // Send email via Resend
-    const emailResponse = await resend.emails.send({
-      from: "Maker Lab <Maker@rockfordpubliclibrary.org>",
-      to: [requestData.email],
-      subject: emailSubject,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-            <h2 style="color: #333; margin: 0 0 10px 0;">Rockford Public Library Maker Lab</h2>
-            <p style="color: #666; margin: 0; font-size: 14px;">Booking Status Update</p>
-          </div>
-          
-          <div style="background-color: white; padding: 20px; border: 1px solid #e9ecef; border-radius: 8px;">
-            ${emailBody.split('\n').map(line => 
-              line.trim() === '' ? '<br>' : 
-              line.startsWith('•') ? `<p style="margin: 5px 0; padding-left: 20px;">${line}</p>` :
-              `<p style="margin: 10px 0;">${line}</p>`
-            ).join('')}
-          </div>
-          
-          <div style="text-align: center; margin-top: 20px; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
-            <p style="margin: 0; color: #666; font-size: 12px;">
-              This email was sent from the Rockford Public Library Maker Lab booking system.
-            </p>
-          </div>
-        </div>
-      `,
-      text: emailBody
+    // Send email via EmailJS REST API
+    const emailResponse = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        service_id: EMAILJS_SERVICE_ID,
+        template_id: EMAILJS_TEMPLATE_ID,
+        user_id: EMAILJS_PUBLIC_KEY,
+        accessToken: EMAILJS_PRIVATE_KEY,
+        template_params: templateParams
+      })
     });
 
-    console.log("✅ Email sent successfully:", emailResponse);
+    if (!emailResponse.ok) {
+      const errorText = await emailResponse.text();
+      console.error("❌ EmailJS API Error:", {
+        status: emailResponse.status,
+        statusText: emailResponse.statusText,
+        error: errorText
+      });
+      throw new Error(`EmailJS API error: ${emailResponse.status} - ${errorText}`);
+    }
+
+    const responseText = await emailResponse.text();
+    console.log("✅ EmailJS Response:", responseText);
 
     return new Response(JSON.stringify({ 
       success: true, 
-      emailId: emailResponse.data?.id,
-      message: "Status update email sent successfully" 
+      message: "Status update email sent successfully via EmailJS",
+      emailjsResponse: responseText
     }), {
       status: 200,
       headers: {
