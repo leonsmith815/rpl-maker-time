@@ -2,7 +2,7 @@ import { MakerLabForm } from "@/components/maker-lab-form";
 import { HoursCard } from "@/components/hours-card";
 import { EquipmentShowcase } from "@/components/equipment-showcase";
 import { Button } from "@/components/ui/button";
-import { Shield } from "lucide-react";
+import { Shield, MessageCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Index = () => {
@@ -10,8 +10,17 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Admin Access Button */}
-      <div className="absolute top-4 right-4 z-10">
+      {/* Top Navigation */}
+      <div className="absolute top-4 right-4 z-10 flex gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/contact")}
+          className="gap-2 text-muted-foreground hover:text-foreground"
+        >
+          <MessageCircle className="w-4 h-4" />
+          Contact
+        </Button>
         <Button
           variant="ghost"
           size="sm"
