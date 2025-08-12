@@ -24,72 +24,41 @@ export const sendStatusUpdateEmail = async (data: BookingEmailData): Promise<voi
     console.log('📧 EmailJS Config:', {
       serviceId: EMAILJS_CONFIG.SERVICE_ID,
       templateId: EMAILJS_CONFIG.TEMPLATE_ID,
-      publicKey: EMAILJS_CONFIG.PUBLIC_KEY?.substring(0, 8) + '...' // Only show first 8 chars for security
+      publicKey: EMAILJS_CONFIG.PUBLIC_KEY?.substring(0, 8) + '...'
     });
 
     // Initialize EmailJS with your public key
     emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
 
     // Format dates for display
-    const formattedDates = data.selectedDates.map(date => {
-      try {
-        return format(new Date(date), 'EEEE, MMMM d, yyyy');
-      } catch {
-        return date; // fallback to original if parsing fails
-      }
-    }).join(', ');
-
-    // Format equipment list
+    const formattedDates = data.selectedDates.join(', ');
     const equipmentList = data.selectedEquipment.join(', ');
-
-    // Format time slots
     const timeSlots = data.selectedTimeSlots.join(', ');
 
-    // Format action date/time
-    let scheduledDateTime = '';
-    if (data.actionDate && data.status === 'scheduled') {
-      try {
-        const actionDate = new Date(data.actionDate);
-        scheduledDateTime = format(actionDate, 'EEEE, MMMM d, yyyy \'at\' h:mm a');
-      } catch {
-        scheduledDateTime = data.actionDate;
-      }
-    }
+    // Create complete email content
+    const emailSubject = getEmailSubject(data.status);
+    const emailBody = getEmailContent(data.status, data.fullName, formattedDates, equipmentList, timeSlots);
 
-    // Prepare email template parameters - matching exactly what EmailJS template expects
+    // Simplified template parameters - only essential ones
     const templateParams = {
-      to_email: data.email,
       to_name: data.fullName,
+      to_email: data.email,
+      from_name: 'Rockford Public Library Maker Lab',
+      from_email: 'Maker@rockfordpubliclibrary.org',
+      reply_to: 'Maker@rockfordpubliclibrary.org',
+      subject: emailSubject,
+      message: emailBody,
       customer_name: data.fullName,
       status: data.status,
-      booking_status: data.status,
       selected_dates: formattedDates,
-      requested_dates: formattedDates,
-      equipment_list: equipmentList,
       equipment: equipmentList,
-      time_slots: timeSlots,
-      times: timeSlots,
-      scheduled_datetime: scheduledDateTime,
-      appointment_datetime: scheduledDateTime,
-      contact_email: 'Maker@rockfordpubliclibrary.org',
-      from_email: 'Maker@rockfordpubliclibrary.org',
-      from_name: 'Rockford Public Library Maker Lab',
-      reply_to: 'Maker@rockfordpubliclibrary.org',
-      
-      // Status-specific content
-      subject: getEmailSubject(data.status, scheduledDateTime),
-      email_subject: getEmailSubject(data.status, scheduledDateTime),
-      message: getEmailContent(data.status, data.fullName, scheduledDateTime, formattedDates, equipmentList),
-      message_content: getEmailContent(data.status, data.fullName, scheduledDateTime, formattedDates, equipmentList),
-      email_body: getEmailContent(data.status, data.fullName, scheduledDateTime, formattedDates, equipmentList),
+      time_slots: timeSlots
     };
 
-    console.log('📤 Sending email with detailed params:', {
+    console.log('📤 Sending simplified email params:', {
       to_email: templateParams.to_email,
-      customer_name: templateParams.customer_name,
-      status: templateParams.status,
       subject: templateParams.subject,
-      templateParamsKeys: Object.keys(templateParams)
+      message_preview: templateParams.message.substring(0, 100) + '...'
     });
 
     // Send email via EmailJS
@@ -100,31 +69,73 @@ export const sendStatusUpdateEmail = async (data: BookingEmailData): Promise<voi
     );
 
     console.log('✅ EmailJS Response:', response);
-    console.log('📬 Email should be sent to:', data.email);
     
     if (response.status === 200) {
-      console.log('🎉 Email sent successfully! Customer should receive notification.');
+      console.log('🎉 Email sent successfully to:', data.email);
+      
+      // Additional verification - log exactly what was sent
+      console.log('📧 Email Details Sent:', {
+        recipient: data.email,
+        subject: emailSubject,
+        status: data.status,
+        service: EMAILJS_CONFIG.SERVICE_ID,
+        template: EMAILJS_CONFIG.TEMPLATE_ID
+      });
     } else {
       console.warn('⚠️ Unexpected response status:', response.status);
+      throw new Error(`EmailJS returned status ${response.status}`);
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Failed to send email:', error);
     console.error('🔍 Error details:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack
+      name: error?.name,
+      message: error?.message,
+      emailConfig: {
+        service: EMAILJS_CONFIG.SERVICE_ID,
+        template: EMAILJS_CONFIG.TEMPLATE_ID,
+        recipient: data.email
+      }
     });
-    throw new Error(`Failed to send email notification: ${error.message}`);
+    throw new Error(`Failed to send email notification: ${error?.message || 'Unknown error'}`);
   }
 };
 
-const getEmailSubject = (status: string, scheduledDateTime?: string): string => {
+// Test function to verify EmailJS setup
+export const testEmailJSConnection = async (): Promise<boolean> => {
+  try {
+    console.log('🧪 Testing EmailJS connection...');
+    
+    emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
+    
+    const testParams = {
+      to_name: 'Test User',
+      to_email: 'test@example.com',
+      from_name: 'Rockford Public Library Maker Lab',
+      subject: 'EmailJS Connection Test',
+      message: 'This is a test email to verify EmailJS configuration.'
+    };
+
+    const response = await emailjs.send(
+      EMAILJS_CONFIG.SERVICE_ID,
+      EMAILJS_CONFIG.TEMPLATE_ID,
+      testParams
+    );
+
+    console.log('✅ Test email response:', response);
+    return response.status === 200;
+  } catch (error: any) {
+    console.error('❌ EmailJS test failed:', error);
+    return false;
+  }
+};
+
+const getEmailSubject = (status: string): string => {
   switch (status.toLowerCase()) {
     case 'pending':
       return 'Maker Lab Booking Confirmation - Request Received';
     case 'scheduled':
-      return `Maker Lab Appointment Scheduled - ${scheduledDateTime}`;
+      return 'Maker Lab Appointment Scheduled';
     case 'missed':
       return 'Maker Lab Appointment - Marked as Missed';
     case 'cancelled':
@@ -134,7 +145,7 @@ const getEmailSubject = (status: string, scheduledDateTime?: string): string => 
   }
 };
 
-const getEmailContent = (status: string, customerName: string, scheduledDateTime?: string, dates?: string, equipment?: string): string => {
+const getEmailContent = (status: string, customerName: string, dates: string, equipment: string, timeSlots: string): string => {
   const baseReminder = `
 
 Important Reminders:
@@ -151,6 +162,7 @@ Thank you for submitting your Maker Lab booking request. We have received your a
 
 Booking Details:
 • Dates Requested: ${dates}
+• Time Slots: ${timeSlots}
 • Equipment: ${equipment}
 
 You will receive another email once your booking has been scheduled or if we need additional information.${baseReminder}
@@ -164,7 +176,8 @@ Rockford Public Library Maker Lab Team`;
 Great news! Your Maker Lab appointment has been scheduled.
 
 Appointment Details:
-• Date & Time: ${scheduledDateTime}
+• Dates: ${dates}
+• Time Slots: ${timeSlots}
 • Equipment: ${equipment}
 • Duration: 2 hours
 
@@ -179,7 +192,12 @@ Rockford Public Library Maker Lab Team`;
     case 'missed':
       return `Dear ${customerName},
 
-Your Maker Lab appointment scheduled for ${scheduledDateTime || dates} has been marked as missed.
+Your Maker Lab appointment has been marked as missed.
+
+Booking Details:
+• Dates: ${dates}
+• Time Slots: ${timeSlots}
+• Equipment: ${equipment}
 
 This typically occurs when:
 • No confirmation was received 24 hours prior to the appointment
@@ -195,7 +213,12 @@ Rockford Public Library Maker Lab Team`;
     case 'cancelled':
       return `Dear ${customerName},
 
-Your Maker Lab appointment scheduled for ${scheduledDateTime || dates} has been cancelled.
+Your Maker Lab appointment has been cancelled.
+
+Booking Details:
+• Dates: ${dates}
+• Time Slots: ${timeSlots}
+• Equipment: ${equipment}
 
 If you would like to reschedule, please submit a new booking request through our system.
 
@@ -208,6 +231,11 @@ Rockford Public Library Maker Lab Team`;
       return `Dear ${customerName},
 
 Your Maker Lab booking status has been updated to: ${status}
+
+Booking Details:
+• Dates: ${dates}
+• Time Slots: ${timeSlots}
+• Equipment: ${equipment}
 
 Questions? Contact us at Maker@rockfordpubliclibrary.org
 
