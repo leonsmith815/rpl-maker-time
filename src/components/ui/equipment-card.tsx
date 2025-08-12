@@ -6,9 +6,18 @@ interface EquipmentCardProps {
   isSelected: boolean;
   onSelect: () => void;
   disabled?: boolean;
+  externalLink?: string;
 }
 
-export function EquipmentCard({ name, isSelected, onSelect, disabled = false }: EquipmentCardProps) {
+export function EquipmentCard({ name, isSelected, onSelect, disabled = false, externalLink }: EquipmentCardProps) {
+  const handleClick = () => {
+    if (externalLink) {
+      window.open(externalLink, '_blank');
+    } else {
+      onSelect();
+    }
+  };
+
   return (
     <Card 
       className={cn(
@@ -19,10 +28,15 @@ export function EquipmentCard({ name, isSelected, onSelect, disabled = false }: 
         !disabled && isSelected ? "bg-gradient-hero text-primary-foreground shadow-glow" : "",
         !disabled && !isSelected ? "bg-gradient-card hover:bg-secondary" : ""
       )}
-      onClick={disabled ? undefined : onSelect}
+      onClick={disabled ? undefined : handleClick}
     >
       <div className="text-sm font-medium text-center">
         {name}
+        {externalLink && (
+          <span className="block text-xs opacity-75 mt-1">
+            Click to visit external site →
+          </span>
+        )}
       </div>
     </Card>
   );
