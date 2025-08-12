@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Calendar as CalendarIcon, Clock, User, Mail, Phone, ChevronDown, Trash2, CheckCircle, FileSpreadsheet, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -14,7 +15,6 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 interface ConfirmedBooking {
@@ -463,32 +463,32 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
        )}
 
        {/* Date Picker Dialog for Status Updates */}
-       <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
-         <PopoverContent className="w-auto p-0" align="center">
-           <div className="p-4 space-y-4">
-             <div className="space-y-2">
-               <h4 className="font-medium">Set Action Date</h4>
-               <p className="text-sm text-muted-foreground">
-                 Select the date for status change to "{statusUpdateData.status}"
-               </p>
+       <Dialog open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
+         <DialogContent className="sm:max-w-md">
+           <DialogHeader>
+             <DialogTitle>Set Action Date</DialogTitle>
+           </DialogHeader>
+           <div className="space-y-4">
+             <p className="text-sm text-muted-foreground">
+               Select the date for status change to "{statusUpdateData.status}"
+             </p>
+             <div className="flex justify-center">
+               <Calendar
+                 mode="single"
+                 selected={statusUpdateData.date}
+                 onSelect={(date) => setStatusUpdateData(prev => ({ ...prev, date }))}
+                 initialFocus
+                 className={cn("p-3 pointer-events-auto")}
+               />
              </div>
-             <Calendar
-               mode="single"
-               selected={statusUpdateData.date}
-               onSelect={(date) => setStatusUpdateData(prev => ({ ...prev, date }))}
-               initialFocus
-               className={cn("p-3 pointer-events-auto")}
-             />
              <div className="flex gap-2 justify-end">
                <Button 
                  variant="outline" 
-                 size="sm"
                  onClick={() => setIsDatePickerOpen(false)}
                >
                  Cancel
                </Button>
                <Button 
-                 size="sm"
                  onClick={updateBookingStatus}
                  disabled={!statusUpdateData.date}
                >
@@ -496,8 +496,8 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
                </Button>
              </div>
            </div>
-         </PopoverContent>
-       </Popover>
+         </DialogContent>
+       </Dialog>
      </div>
   );
 };
