@@ -30,7 +30,11 @@ interface ConfirmedBooking {
   action_date: string | null;
 }
 
-export const ConfirmedBookingsTab = () => {
+interface ConfirmedBookingsTabProps {
+  onCountChange?: (count: number) => void;
+}
+
+export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProps = {}) => {
   const [bookings, setBookings] = useState<ConfirmedBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBookings, setSelectedBookings] = useState<string[]>([]);
@@ -50,6 +54,8 @@ export const ConfirmedBookingsTab = () => {
       }
 
       setBookings(data || []);
+      // Notify parent component of count change
+      onCountChange?.(data?.length || 0);
     } catch (error) {
       console.error('Error:', error);
       toast.error('Failed to fetch confirmed bookings');

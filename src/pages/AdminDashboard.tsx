@@ -17,12 +17,21 @@ interface DashboardStats {
   thisWeekRequests: number;
 }
 
+interface TabCounts {
+  requestsCount: number;
+  confirmedCount: number;
+}
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
     totalRequests: 0,
     pendingRequests: 0,
     confirmedBookings: 0,
     thisWeekRequests: 0
+  });
+  const [tabCounts, setTabCounts] = useState<TabCounts>({
+    requestsCount: 0,
+    confirmedCount: 0
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -93,6 +102,14 @@ export default function AdminDashboard() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleRequestsCountChange = (count: number) => {
+    setTabCounts(prev => ({ ...prev, requestsCount: count }));
+  };
+
+  const handleConfirmedCountChange = (count: number) => {
+    setTabCounts(prev => ({ ...prev, confirmedCount: count }));
   };
 
   const handleSignOut = async () => {
@@ -221,29 +238,29 @@ export default function AdminDashboard() {
             <TabsTrigger value="requests" className="text-base py-3">
               <Clock className="h-4 w-4 mr-2" />
               Booking Requests
-              {stats.pendingRequests > 0 && (
+              {tabCounts.requestsCount > 0 && (
                 <Badge variant="destructive" className="ml-2 text-xs">
-                  {stats.pendingRequests}
+                  {tabCounts.requestsCount}
                 </Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="confirmed" className="text-base py-3">
               <CheckCircle className="h-4 w-4 mr-2" />
               Confirmed Bookings
-              {stats.confirmedBookings > 0 && (
+              {tabCounts.confirmedCount > 0 && (
                 <Badge variant="secondary" className="ml-2 text-xs">
-                  {stats.confirmedBookings}
+                  {tabCounts.confirmedCount}
                 </Badge>
               )}
             </TabsTrigger>
           </TabsList>
           
           <TabsContent value="requests">
-            <BookingRequestsTab />
+            <BookingRequestsTab onCountChange={handleRequestsCountChange} />
           </TabsContent>
           
           <TabsContent value="confirmed">
-            <ConfirmedBookingsTab />
+            <ConfirmedBookingsTab onCountChange={handleConfirmedCountChange} />
           </TabsContent>
         </Tabs>
       </div>

@@ -21,7 +21,11 @@ interface BookingRequest {
   created_at: string;
 }
 
-export const BookingRequestsTab = () => {
+interface BookingRequestsTabProps {
+  onCountChange?: (count: number) => void;
+}
+
+export const BookingRequestsTab = ({ onCountChange }: BookingRequestsTabProps = {}) => {
   const [requests, setRequests] = useState<BookingRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,6 +43,8 @@ export const BookingRequestsTab = () => {
       }
 
       setRequests(data || []);
+      // Notify parent component of count change
+      onCountChange?.(data?.length || 0);
     } catch (error) {
       console.error('Error:', error);
       toast.error('Failed to fetch booking requests');
