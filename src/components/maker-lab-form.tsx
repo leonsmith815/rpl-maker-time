@@ -105,6 +105,16 @@ export function MakerLabForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate all required fields
+    if (!formData.name || !formData.email || !formData.phone) {
+      toast({
+        title: "Please fill all fields",
+        description: "Name, email, and phone number are required.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     if (!accessOption) {
       toast({
         title: "Please select access option",
@@ -140,94 +150,69 @@ export function MakerLabForm() {
       });
       return;
     }
-    
-    if (!formData.name || !formData.email || !formData.phone || !formData.currentDate) {
-      toast({
-        title: "Please fill all fields",
-        description: "All fields are required to complete your booking.",
-        variant: "destructive"
-      });
-      return;
-    }
 
     try {
-      // Convert dates to long format for database storage
-      const dateStrings = selectedDates.map(date => format(date, "EEEE, MMMM do, yyyy"));
+      // Prepare data for EmailJS with correct field mapping
+      const preferredDates = selectedDates.map(date => format(date, "EEEE, MMMM do, yyyy")).join(", ");
+      const timeSlots = selectedTimeSlots.join(", ");
       
-      // Convert current date from MM/dd/yyyy to YYYY-MM-DD for database
-      const currentDateForDb = format(new Date(), "yyyy-MM-dd");
-      
-      const { data, error } = await supabase
-        .from('maker_lab_bookings')
-        .insert({
-          access_option: accessOption,
-          selected_dates: dateStrings,
-          selected_time_slots: selectedTimeSlots,
-          selected_equipment: [selectedEquipment],
-          full_name: formData.name,
-          preferred_date: currentDateForDb,
-          email: formData.email,
-          phone: formData.phone,
-          status: 'pending'
-        });
+      const emailData = {
+        user_name: formData.name,
+        user_email: formData.email,
+        user_phone: formData.phone,
+        lab_access: accessOption,
+        preferred_dates: preferredDates,
+        time_slots: timeSlots,
+        equipment: selectedEquipment
+      };
 
-      if (error) {
-        console.error('Database error:', error);
-        toast({
-          title: "Submission failed",
-          description: "There was an error submitting your booking. Please try again.",
-          variant: "destructive"
-        });
-        return;
-      }
+      console.log('Sending email data:', emailData);
+      console.log('EmailJS service available:', !!window.emailjs);
 
-      // Send confirmation email using EmailJS
-      try {
-        if (window.emailjs) {
-          await window.emailjs.send('service_c5hnxps', 'template_s5pm6ri', {
-            user_name: formData.name,
-            user_email: formData.email,
-            user_phone: formData.phone,
-            lab_access: accessOption === 'training' ? 'Training Session' : 'Appointment',
-            preferred_dates: dateStrings.join(', '),
-            time_slots: selectedTimeSlots.join(', '),
-            equipment: selectedEquipment
-          });
+      // Send email using EmailJS
+      if (window.emailjs) {
+        console.log('About to send email with service: service_c5hnxps, template: template_s5pm6ri');
+        const response = await window.emailjs.send(
+          'service_c5hnxps',
+          'template_s5pm6ri',
+          emailData,
+          'ExUWNRz9bRhzQFxBM'
+        );
 
-          toast({
-            title: "Booking submitted!",
-            description: "Confirmation email sent! We'll contact you based on availability. Thank you!"
-          });
+        console.log('EmailJS raw response:', response);
+        
+        if (response.status === 200) {
+          console.log('Email sent successfully with status 200');
         } else {
-          toast({
-            title: "Booking submitted!",
-            description: "Your booking was saved but email service is unavailable. We'll contact you based on availability.",
-          });
+          console.warn('EmailJS returned non-200 status:', response.status, response.text);
         }
-      } catch (emailError) {
-        console.error('EmailJS sending failed:', emailError);
+
         toast({
-          title: "Booking submitted!",
-          description: "Your booking was saved but we couldn't send the confirmation email. We'll contact you based on availability.",
+          title: "Success!",
+          description: "Your booking request has been sent successfully! We'll contact you soon."
         });
+
+        // Reset form after successful submission
+        setSelectedDates([]);
+        setSelectedTimeSlots([]);
+        setSelectedEquipment("");
+        setAccessOption("");
+        setFormData({
+          name: "",
+          currentDate: format(new Date(), "MM/dd/yyyy"),
+          email: "",
+          phone: ""
+        });
+
+      } else {
+        throw new Error('EmailJS not available');
       }
 
-      // Reset form
-      setSelectedDates([]);
-      setSelectedTimeSlots([]);
-      setSelectedEquipment("");
-      setAccessOption("");
-      setFormData({
-        name: "",
-        currentDate: format(new Date(), "MM/dd/yyyy"),
-        email: "",
-        phone: ""
-      });
     } catch (error) {
-      console.error('Unexpected error:', error);
+      console.error('Error sending email:', error);
       toast({
-        title: "Submission failed",
-        description: "An unexpected error occurred. Please try again.",
+        title: "Error",
+        description: "Failed to send your booking request. Please try again.",
         variant: "destructive"
       });
     }
