@@ -7,10 +7,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Calendar, Clock, User, Mail, Phone, ChevronDown, Trash2, CheckCircle, Download } from "lucide-react";
+import { Calendar, Clock, User, Mail, Phone, ChevronDown, Trash2, CheckCircle, FileSpreadsheet, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 interface ConfirmedBooking {
   id: string;
@@ -124,7 +126,7 @@ export const ConfirmedBookingsTab = () => {
     }
   };
 
-  const exportConfirmedBookings = () => {
+  const exportToExcel = () => {
     const worksheetData = bookings.map(booking => ({
       "Full Name": booking.full_name,
       "Email": booking.email,
@@ -143,7 +145,71 @@ export const ConfirmedBookingsTab = () => {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Confirmed Bookings");
     XLSX.writeFile(workbook, `confirmed-bookings-${new Date().toISOString().split('T')[0]}.xlsx`);
     
-    toast.success("Confirmed bookings report exported successfully");
+    toast.success("Confirmed bookings Excel report exported successfully");
+  };
+
+  const exportToPDF = () => {
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4'
+    });
+    
+    doc.setFontSize(20);
+    doc.text("Confirmed Bookings Report", 20, 20);
+    
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 30);
+    doc.text(`Total Confirmed Bookings: ${bookings.length}`, 20, 35);
+
+    const tableData = bookings.map(booking => [
+      booking.full_name,
+      booking.email,
+      booking.phone || "N/A",
+      booking.access_option,
+      booking.selected_equipment.join(", "),
+      booking.selected_dates.join("\n"),
+      booking.selected_time_slots.join("\n"),
+      booking.status,
+      new Date(booking.created_at).toLocaleDateString(),
+      booking.action_date ? new Date(booking.action_date).toLocaleDateString() : "N/A",
+    ]);
+
+    autoTable(doc, {
+      head: [["Name", "Email", "Phone", "Access", "Equipment", "Requested Dates", "Time Slots", "Status", "Confirmed", "Last Action"]],
+      body: tableData,
+      startY: 45,
+      styles: { 
+        fontSize: 8,
+        cellPadding: 2,
+        halign: 'left',
+      },
+      columnStyles: {
+        0: { cellWidth: 25 }, // Name
+        1: { cellWidth: 35 }, // Email
+        2: { cellWidth: 20 }, // Phone
+        3: { cellWidth: 20 }, // Access
+        4: { cellWidth: 30 }, // Equipment
+        5: { cellWidth: 35 }, // Requested Dates
+        6: { cellWidth: 35 }, // Time Slots
+        7: { cellWidth: 20 }, // Status
+        8: { cellWidth: 20 }, // Confirmed
+        9: { cellWidth: 20 }, // Last Action
+      },
+      headStyles: {
+        fontSize: 9,
+        fontStyle: 'bold',
+        fillColor: [34, 139, 34],
+        textColor: 255,
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245],
+      },
+    });
+
+    doc.save(`confirmed-bookings-${new Date().toISOString().split('T')[0]}.pdf`);
+    
+    toast.success("Confirmed bookings PDF report exported successfully");
   };
 
   const getStatusBadgeVariant = (status: string) => {
@@ -174,9 +240,13 @@ export const ConfirmedBookingsTab = () => {
         </div>
         
         <div className="flex gap-2">
-          <Button onClick={exportConfirmedBookings} variant="outline" className="gap-2">
-            <Download className="h-4 w-4" />
-            Export Report
+          <Button onClick={exportToExcel} variant="outline" className="gap-2">
+            <FileSpreadsheet className="h-4 w-4" />
+            Export Excel
+          </Button>
+          <Button onClick={exportToPDF} variant="outline" className="gap-2">
+            <FileText className="h-4 w-4" />
+            Export PDF
           </Button>
           
           {selectedBookings.length > 0 && (
