@@ -51,10 +51,11 @@ export function EquipmentShowcase() {
           {equipmentData.map((equipment, index) => {
             if (equipment.name === "Singer Heavy Duty Sewing Machine") {
               return (
-                <button
+                <a
                   key={equipment.name}
-                  onClick={handleSewingMachineClick}
-                  className="group overflow-hidden bg-gradient-card border-border/50 hover:shadow-glow transition-all duration-300 cursor-pointer rounded-lg border text-left w-full p-0"
+                  href="https://services.rockfordpubliclibrary.org/events?r=thismonth"
+                  target="_self"
+                  className="group overflow-hidden bg-gradient-card border-border/50 hover:shadow-glow transition-all duration-300 cursor-pointer rounded-lg border text-left w-full p-0 block no-underline"
                 >
                   <div className="aspect-video overflow-hidden">
                     <img 
@@ -67,10 +68,10 @@ export function EquipmentShowcase() {
                     <h3 className="font-semibold text-lg mb-2">{equipment.name}</h3>
                     <p className="text-sm text-muted-foreground">{equipment.description}</p>
                     <p className="text-xs text-primary mt-2 font-medium">
-                      Click to book appointment →
+                      🔗 Click to book appointment →
                     </p>
                   </div>
-                </button>
+                </a>
               );
             }
             
