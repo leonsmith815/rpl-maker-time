@@ -34,8 +34,17 @@ export const sendStatusUpdateEmail = async (data: BookingEmailData): Promise<voi
       }
     });
 
+    console.log('📥 Edge Function Response:', { response, error });
+
     if (error) {
       console.error('❌ Supabase Function Error:', error);
+      
+      // If there's a network or connection error, log more details
+      if (error.message?.includes('non-2xx status code')) {
+        console.log('🔍 Checking edge function logs for detailed error...');
+        console.log('📋 Edge function might have internal errors. Check the logs for detailed error information.');
+      }
+      
       throw new Error(`Edge function error: ${error.message}`);
     }
 
@@ -48,7 +57,7 @@ export const sendStatusUpdateEmail = async (data: BookingEmailData): Promise<voi
     console.log('📬 Email details:', {
       recipient: data.email,
       status: data.status,
-      emailId: response.emailId
+      response: response
     });
 
   } catch (error: any) {

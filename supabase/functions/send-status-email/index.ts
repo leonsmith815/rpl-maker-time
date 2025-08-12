@@ -150,7 +150,15 @@ const handler = async (req: Request): Promise<Response> => {
     const EMAILJS_PUBLIC_KEY = Deno.env.get("EMAILJS_PUBLIC_KEY") || "ExUWNRz9bRhzQFxBM";
     const EMAILJS_PRIVATE_KEY = Deno.env.get("EMAILJS_PRIVATE_KEY");
 
+    console.log("🔑 EmailJS Config:", {
+      serviceId: EMAILJS_SERVICE_ID,
+      templateId: EMAILJS_TEMPLATE_ID,
+      publicKey: EMAILJS_PUBLIC_KEY?.substring(0, 8) + "...",
+      hasPrivateKey: !!EMAILJS_PRIVATE_KEY
+    });
+
     if (!EMAILJS_PRIVATE_KEY) {
+      console.error("❌ Missing EMAILJS_PRIVATE_KEY");
       throw new Error("EMAILJS_PRIVATE_KEY environment variable is required for server-side EmailJS calls");
     }
 
@@ -189,7 +197,8 @@ const handler = async (req: Request): Promise<Response> => {
       service: EMAILJS_SERVICE_ID,
       template: EMAILJS_TEMPLATE_ID,
       to: requestData.email,
-      subject: emailSubject
+      subject: emailSubject,
+      templateParamsKeys: Object.keys(templateParams)
     });
 
     // Send email via EmailJS REST API
@@ -207,18 +216,21 @@ const handler = async (req: Request): Promise<Response> => {
       })
     });
 
+    console.log("📡 EmailJS API Response Status:", emailResponse.status);
+
     if (!emailResponse.ok) {
       const errorText = await emailResponse.text();
-      console.error("❌ EmailJS API Error:", {
+      console.error("❌ EmailJS API Error Details:", {
         status: emailResponse.status,
         statusText: emailResponse.statusText,
-        error: errorText
+        error: errorText,
+        headers: Object.fromEntries(emailResponse.headers.entries())
       });
       throw new Error(`EmailJS API error: ${emailResponse.status} - ${errorText}`);
     }
 
     const responseText = await emailResponse.text();
-    console.log("✅ EmailJS Response:", responseText);
+    console.log("✅ EmailJS Success Response:", responseText);
 
     return new Response(JSON.stringify({ 
       success: true, 
