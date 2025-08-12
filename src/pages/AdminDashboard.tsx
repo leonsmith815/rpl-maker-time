@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BookingRequestsTab } from "@/components/booking-requests-tab";
+import { sendStatusUpdateEmail } from "@/services/emailService";
 import { useToast } from "@/hooks/use-toast";
 import {
   Table,
@@ -45,7 +48,6 @@ import { cn } from "@/lib/utils";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { sendStatusUpdateEmail } from "@/services/emailService";
 
 interface Booking {
   id: string;
@@ -734,12 +736,24 @@ export default function AdminDashboard() {
           )}
         </div>
 
-        {/* Bookings Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Booking Requests</CardTitle>
-          </CardHeader>
-          <CardContent>
+        {/* Tabs for Requests and Confirmed Bookings */}
+        <Tabs defaultValue="requests" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="requests">Booking Requests</TabsTrigger>
+            <TabsTrigger value="confirmed">Confirmed Bookings</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="requests">
+            <BookingRequestsTab />
+          </TabsContent>
+          
+          <TabsContent value="confirmed">
+            {/* Confirmed Bookings Table */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Confirmed Bookings</CardTitle>
+              </CardHeader>
+              <CardContent>
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -928,6 +942,8 @@ export default function AdminDashboard() {
             )}
           </CardContent>
         </Card>
+        </TabsContent>
+      </Tabs>
       </div>
     </div>
   );

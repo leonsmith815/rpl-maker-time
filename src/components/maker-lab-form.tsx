@@ -161,9 +161,8 @@ export function MakerLabForm() {
       const currentDateForDb = format(new Date(), "yyyy-MM-dd");
       
       const { data, error } = await supabase
-        .from('maker_lab_bookings')
+        .from('public_booking_requests')
         .insert({
-          user_id: user?.id || null, // Use authenticated user ID or null for guest bookings
           access_option: accessOption,
           selected_dates: dateStrings,
           selected_time_slots: selectedTimeSlots,
@@ -179,7 +178,7 @@ export function MakerLabForm() {
         console.error('Database error:', error);
         toast({
           title: "Submission failed",
-          description: "There was an error submitting your booking. Please try again.",
+          description: "There was an error submitting your booking request. Please try again.",
           variant: "destructive"
         });
         return;

@@ -122,6 +122,57 @@ export type Database = {
         }
         Relationships: []
       }
+      public_booking_requests: {
+        Row: {
+          access_option: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          ip_address: unknown | null
+          phone: string | null
+          preferred_date: string
+          selected_dates: string[]
+          selected_equipment: string[]
+          selected_time_slots: string[]
+          status: string
+          submitted_at: string
+          updated_at: string
+        }
+        Insert: {
+          access_option: string
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          ip_address?: unknown | null
+          phone?: string | null
+          preferred_date: string
+          selected_dates: string[]
+          selected_equipment: string[]
+          selected_time_slots: string[]
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Update: {
+          access_option?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          ip_address?: unknown | null
+          phone?: string | null
+          preferred_date?: string
+          selected_dates?: string[]
+          selected_equipment?: string[]
+          selected_time_slots?: string[]
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       time_slots: {
         Row: {
           created_at: string
@@ -183,6 +234,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
+      }
+      promote_booking_request_to_confirmed: {
+        Args: { request_id: string; assigned_user_id?: string }
+        Returns: string
       }
     }
     Enums: {
