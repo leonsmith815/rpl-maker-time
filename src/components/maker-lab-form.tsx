@@ -275,7 +275,7 @@ export function MakerLabForm() {
           
           console.log('Sending email data:', emailData);
           
-          await window.emailjs.send('service_c5hnxps', 'template_s5pm6ri2', emailData);
+          await window.emailjs.send('service_c5hnxps', 'template_s5pm6ri', emailData);
 
           toast({
             title: "Booking submitted!",
