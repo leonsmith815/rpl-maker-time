@@ -29,7 +29,7 @@ const equipmentData = [
 
 export function EquipmentShowcase() {
   const handleSewingMachineClick = () => {
-    window.open('https://services.rockfordpubliclibrary.org/events?r=thismonth', '_blank');
+    window.location.href = 'https://services.rockfordpubliclibrary.org/events?r=thismonth';
   };
 
   return (
