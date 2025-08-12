@@ -151,6 +151,9 @@ export function MakerLabForm() {
     }
 
     try {
+      // Get current user or create a guest user ID for unauthenticated users
+      const { data: { user } } = await supabase.auth.getUser();
+      
       // Convert dates to long format for database storage
       const dateStrings = selectedDates.map(date => format(date, "EEEE, MMMM do, yyyy"));
       
@@ -160,6 +163,7 @@ export function MakerLabForm() {
       const { data, error } = await supabase
         .from('maker_lab_bookings')
         .insert({
+          user_id: user?.id || null, // Use authenticated user ID or null for guest bookings
           access_option: accessOption,
           selected_dates: dateStrings,
           selected_time_slots: selectedTimeSlots,
