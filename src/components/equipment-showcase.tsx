@@ -48,32 +48,51 @@ export function EquipmentShowcase() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {equipmentData.map((equipment, index) => (
-            <Card 
-              key={equipment.name} 
-              className={`group overflow-hidden bg-gradient-card border-border/50 hover:shadow-glow transition-all duration-300 ${
-                equipment.name === "Singer Heavy Duty Sewing Machine" ? "cursor-pointer" : ""
-              }`}
-              onClick={equipment.name === "Singer Heavy Duty Sewing Machine" ? handleSewingMachineClick : undefined}
-            >
-              <div className="aspect-video overflow-hidden">
-                <img 
-                  src={equipment.image}
-                  alt={equipment.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-lg mb-2">{equipment.name}</h3>
-                <p className="text-sm text-muted-foreground">{equipment.description}</p>
-                {equipment.name === "Singer Heavy Duty Sewing Machine" && (
-                  <p className="text-xs text-primary mt-2 font-medium">
-                    Click to book appointment →
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+          {equipmentData.map((equipment, index) => {
+            if (equipment.name === "Singer Heavy Duty Sewing Machine") {
+              return (
+                <button
+                  key={equipment.name}
+                  onClick={handleSewingMachineClick}
+                  className="group overflow-hidden bg-gradient-card border-border/50 hover:shadow-glow transition-all duration-300 cursor-pointer rounded-lg border text-left w-full p-0"
+                >
+                  <div className="aspect-video overflow-hidden">
+                    <img 
+                      src={equipment.image}
+                      alt={equipment.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-lg mb-2">{equipment.name}</h3>
+                    <p className="text-sm text-muted-foreground">{equipment.description}</p>
+                    <p className="text-xs text-primary mt-2 font-medium">
+                      Click to book appointment →
+                    </p>
+                  </div>
+                </button>
+              );
+            }
+            
+            return (
+              <Card 
+                key={equipment.name} 
+                className="group overflow-hidden bg-gradient-card border-border/50 hover:shadow-glow transition-all duration-300"
+              >
+                <div className="aspect-video overflow-hidden">
+                  <img 
+                    src={equipment.image}
+                    alt={equipment.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <CardContent className="p-4">
+                  <h3 className="font-semibold text-lg mb-2">{equipment.name}</h3>
+                  <p className="text-sm text-muted-foreground">{equipment.description}</p>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
     </div>
