@@ -28,7 +28,10 @@ const equipmentData = [
 ];
 
 export function EquipmentShowcase() {
-  const handleSewingMachineClick = () => {
+  const handleSewingMachineClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Sewing machine clicked - navigating to external site');
     window.location.href = 'https://services.rockfordpubliclibrary.org/events?r=thismonth';
   };
 
@@ -48,7 +51,9 @@ export function EquipmentShowcase() {
           {equipmentData.map((equipment, index) => (
             <Card 
               key={equipment.name} 
-              className="group overflow-hidden bg-gradient-card border-border/50 hover:shadow-glow transition-all duration-300 cursor-pointer"
+              className={`group overflow-hidden bg-gradient-card border-border/50 hover:shadow-glow transition-all duration-300 ${
+                equipment.name === "Singer Heavy Duty Sewing Machine" ? "cursor-pointer" : ""
+              }`}
               onClick={equipment.name === "Singer Heavy Duty Sewing Machine" ? handleSewingMachineClick : undefined}
             >
               <div className="aspect-video overflow-hidden">
@@ -61,6 +66,11 @@ export function EquipmentShowcase() {
               <CardContent className="p-4">
                 <h3 className="font-semibold text-lg mb-2">{equipment.name}</h3>
                 <p className="text-sm text-muted-foreground">{equipment.description}</p>
+                {equipment.name === "Singer Heavy Duty Sewing Machine" && (
+                  <p className="text-xs text-primary mt-2 font-medium">
+                    Click to book appointment →
+                  </p>
+                )}
               </CardContent>
             </Card>
           ))}
