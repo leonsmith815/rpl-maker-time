@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookingRequestsTab } from "@/components/booking-requests-tab";
-import { sendStatusUpdateEmail } from "@/services/emailService";
 import { useToast } from "@/hooks/use-toast";
 import {
   Table,
@@ -48,6 +47,7 @@ import { cn } from "@/lib/utils";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { sendStatusUpdateEmail } from "@/services/emailService";
 
 interface Booking {
   id: string;
