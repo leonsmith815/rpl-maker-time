@@ -58,6 +58,7 @@ interface Booking {
   status: string;
   created_at: string;
   action_date: string | null;
+  is_deleted?: boolean;
 }
 
 export default function AdminDashboard() {
@@ -65,6 +66,7 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [selectedBookings, setSelectedBookings] = useState<string[]>([]);
+  const [deletedBookings, setDeletedBookings] = useState<Set<string>>(new Set());
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -400,7 +402,30 @@ export default function AdminDashboard() {
     );
   };
 
-  const deleteBooking = async (bookingId: string, bookingName: string) => {
+  const markBookingForDeletion = (bookingId: string, bookingName: string) => {
+    setDeletedBookings(prev => new Set(prev).add(bookingId));
+    
+    toast({
+      title: "Booking Marked for Deletion",
+      description: `${bookingName}'s booking is marked for deletion. Click delete again to permanently remove.`,
+      variant: "destructive",
+    });
+  };
+
+  const undoBookingDeletion = (bookingId: string, bookingName: string) => {
+    setDeletedBookings(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(bookingId);
+      return newSet;
+    });
+    
+    toast({
+      title: "Deletion Undone",
+      description: `${bookingName}'s booking has been restored.`,
+    });
+  };
+
+  const deleteBookingPermanently = async (bookingId: string, bookingName: string) => {
     try {
       const { error } = await supabase
         .from("maker_lab_bookings")
@@ -413,9 +438,14 @@ export default function AdminDashboard() {
 
       // Update local state by removing the deleted booking
       setBookings(bookings.filter(booking => booking.id !== bookingId));
+      setDeletedBookings(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(bookingId);
+        return newSet;
+      });
 
       toast({
-        title: "Booking Deleted",
+        title: "Booking Permanently Deleted",
         description: `${bookingName}'s booking has been permanently deleted`,
       });
     } catch (error) {
@@ -828,37 +858,59 @@ export default function AdminDashboard() {
                              : "N/A"
                            }
                          </TableCell>
-                        <TableCell>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button 
-                                variant="destructive" 
-                                size="sm"
-                                className="gap-2"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                                Delete
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  This action cannot be undone. This will permanently delete {booking.full_name}'s booking request and remove all associated data from the database.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction 
-                                  onClick={() => deleteBooking(booking.id, booking.full_name)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                  Delete Permanently
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </TableCell>
+                         <TableCell>
+                           {deletedBookings.has(booking.id) ? (
+                             <div className="flex gap-2">
+                               <Button 
+                                 variant="outline" 
+                                 size="sm"
+                                 onClick={() => undoBookingDeletion(booking.id, booking.full_name)}
+                                 className="gap-2"
+                               >
+                                 Undo
+                               </Button>
+                               <AlertDialog>
+                                 <AlertDialogTrigger asChild>
+                                   <Button 
+                                     variant="destructive" 
+                                     size="sm"
+                                     className="gap-2"
+                                   >
+                                     <Trash2 className="h-4 w-4" />
+                                     Delete Permanently
+                                   </Button>
+                                 </AlertDialogTrigger>
+                                 <AlertDialogContent>
+                                   <AlertDialogHeader>
+                                     <AlertDialogTitle>Permanently Delete Booking?</AlertDialogTitle>
+                                     <AlertDialogDescription>
+                                       This action cannot be undone. This will permanently delete {booking.full_name}'s booking request and remove all associated data from the database.
+                                     </AlertDialogDescription>
+                                   </AlertDialogHeader>
+                                   <AlertDialogFooter>
+                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                     <AlertDialogAction 
+                                       onClick={() => deleteBookingPermanently(booking.id, booking.full_name)}
+                                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                     >
+                                       Delete Permanently
+                                     </AlertDialogAction>
+                                   </AlertDialogFooter>
+                                 </AlertDialogContent>
+                               </AlertDialog>
+                             </div>
+                           ) : (
+                             <Button 
+                               variant="destructive" 
+                               size="sm"
+                               onClick={() => markBookingForDeletion(booking.id, booking.full_name)}
+                               className="gap-2"
+                             >
+                               <Trash2 className="h-4 w-4" />
+                               Delete
+                             </Button>
+                           )}
+                         </TableCell>
                      </TableRow>
                   ))}
                 </TableBody>
