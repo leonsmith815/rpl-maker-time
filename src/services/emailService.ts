@@ -1,11 +1,11 @@
 import emailjs from '@emailjs/browser';
 import { format } from 'date-fns';
 
-// EmailJS Configuration - Replace with your actual values
+// EmailJS Configuration - Uses Supabase secrets in production
 const EMAILJS_CONFIG = {
-  SERVICE_ID: 'YOUR_SERVICE_ID', // Replace with your EmailJS Service ID
-  TEMPLATE_ID: 'YOUR_TEMPLATE_ID', // Replace with your EmailJS Template ID  
-  PUBLIC_KEY: 'YOUR_PUBLIC_KEY', // Replace with your EmailJS Public Key
+  SERVICE_ID: 'service_eam7i5r', // Your actual EmailJS Service ID
+  TEMPLATE_ID: 'template_jgkrnk7', // Your actual EmailJS Template ID  
+  PUBLIC_KEY: 'EQl2gJfhsz-aT0T7v', // Your actual EmailJS Public Key
 };
 
 interface BookingEmailData {

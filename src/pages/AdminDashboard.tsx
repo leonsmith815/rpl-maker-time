@@ -45,6 +45,7 @@ import { cn } from "@/lib/utils";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { sendStatusUpdateEmail } from "@/services/emailService";
 
 interface Booking {
   id: string;
@@ -156,7 +157,7 @@ export default function AdminDashboard() {
       console.log("🔍 Found booking for email:", booking);
       
       if (booking) {
-        // Send email notification using secure EmailJS edge function
+        // Send email notification using EmailJS from frontend
         console.log("📧 Attempting to send email notification...");
         try {
           const emailPayload = {
@@ -171,18 +172,10 @@ export default function AdminDashboard() {
           
           console.log("📤 Email payload:", emailPayload);
           
-          const { data, error: emailError } = await supabase.functions.invoke('send-emailjs-notification', {
-            body: emailPayload
-          });
-
-          if (emailError) {
-            console.error("❌ Failed to send email notification:", emailError);
-            // Don't fail the status update if email fails
-          } else {
-            console.log("✅ Email notification sent successfully:", data);
-          }
+          await sendStatusUpdateEmail(emailPayload);
+          console.log("✅ Email notification sent successfully");
         } catch (emailError) {
-          console.error("💥 Error sending email notification:", emailError);
+          console.error("❌ Error sending email notification:", emailError);
           // Don't fail the status update if email fails
         }
       } else {
