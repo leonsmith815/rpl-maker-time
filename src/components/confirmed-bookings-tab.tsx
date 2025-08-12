@@ -40,7 +40,7 @@ export const ConfirmedBookingsTab = () => {
       const { data, error } = await supabase
         .from('maker_lab_bookings')
         .select('*')
-        .neq('status', 'pending') // Only get confirmed/scheduled/completed bookings
+        .neq('status', 'pending') // Only get confirmed/scheduled/completed bookings - NOT pending
         .order('created_at', { ascending: false });
 
       if (error) {
