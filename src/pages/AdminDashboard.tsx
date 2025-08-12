@@ -45,7 +45,6 @@ import { cn } from "@/lib/utils";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { sendStatusUpdateEmail } from "@/services/emailService";
 
 interface Booking {
   id: string;
@@ -155,21 +154,29 @@ export default function AdminDashboard() {
       // Find the booking to get customer details for email
       const booking = bookings.find(b => b.id === bookingId);
       if (booking) {
-        // Send email notification using EmailJS
+        // Send email notification using secure EmailJS edge function
         try {
-          await sendStatusUpdateEmail({
-            email: booking.email,
-            fullName: booking.full_name,
-            status: newStatus,
-            selectedDates: booking.selected_dates,
-            selectedTimeSlots: booking.selected_time_slots,
-            selectedEquipment: booking.selected_equipment,
-            actionDate: actionDate
+          const { error: emailError } = await supabase.functions.invoke('send-emailjs-notification', {
+            body: {
+              email: booking.email,
+              fullName: booking.full_name,
+              status: newStatus,
+              selectedDates: booking.selected_dates,
+              selectedTimeSlots: booking.selected_time_slots,
+              selectedEquipment: booking.selected_equipment,
+              actionDate: actionDate
+            }
           });
-          console.log("Email notification sent successfully");
+
+          if (emailError) {
+            console.error("Failed to send email notification:", emailError);
+            // Don't fail the status update if email fails
+          } else {
+            console.log("Email notification sent successfully");
+          }
         } catch (emailError) {
           console.error("Error sending email notification:", emailError);
-          // Don't fail the status update if email fails - show warning in toast
+          // Don't fail the status update if email fails
         }
       }
 
