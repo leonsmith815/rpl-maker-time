@@ -472,10 +472,19 @@ export function MakerLabForm() {
                     id="phone" 
                     type="tel" 
                     value={formData.phone} 
-                    onChange={e => setFormData(prev => ({
-                      ...prev,
-                      phone: e.target.value
-                    }))} 
+                    onChange={e => {
+                      const value = e.target.value;
+                      // Allow only numbers, dashes, and enforce 815-555-5555 format
+                      const formatted = value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+                      if (formatted.length <= 12) { // 815-555-5555 is 12 characters
+                        setFormData(prev => ({
+                          ...prev,
+                          phone: formatted
+                        }));
+                      }
+                    }} 
+                    placeholder="815-555-5555"
+                    pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
                     className="h-12 bg-background/70 border-border/50 focus:border-primary focus:ring-primary/20 rounded-xl text-base" 
                     required 
                   />

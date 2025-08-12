@@ -28,6 +28,10 @@ const equipmentData = [
 ];
 
 export function EquipmentShowcase() {
+  const handleSewingMachineClick = () => {
+    window.open('https://services.rockfordpubliclibrary.org/events?r=thismonth', '_blank');
+  };
+
   return (
     <div className="py-16 bg-gradient-section">
       <div className="container mx-auto px-4">
@@ -42,7 +46,11 @@ export function EquipmentShowcase() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {equipmentData.map((equipment, index) => (
-            <Card key={equipment.name} className="group overflow-hidden bg-gradient-card border-border/50 hover:shadow-glow transition-all duration-300">
+            <Card 
+              key={equipment.name} 
+              className="group overflow-hidden bg-gradient-card border-border/50 hover:shadow-glow transition-all duration-300 cursor-pointer"
+              onClick={equipment.name === "Singer Heavy Duty Sewing Machine" ? handleSewingMachineClick : undefined}
+            >
               <div className="aspect-video overflow-hidden">
                 <img 
                   src={equipment.image}
