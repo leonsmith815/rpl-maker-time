@@ -8,6 +8,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Calendar as CalendarIcon, Clock, User, Mail, Phone, ChevronDown, Trash2, CheckCircle, FileSpreadsheet, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -41,10 +43,11 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
   const [bookings, setBookings] = useState<ConfirmedBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBookings, setSelectedBookings] = useState<string[]>([]);
-  const [statusUpdateData, setStatusUpdateData] = useState<{bookingId: string, status: string, date: Date | undefined}>({
+  const [statusUpdateData, setStatusUpdateData] = useState<{bookingId: string, status: string, date: Date | undefined, time: string}>({
     bookingId: '',
     status: '',
-    date: undefined
+    date: undefined,
+    time: '09:00'
   });
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
@@ -81,7 +84,8 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
     setStatusUpdateData({
       bookingId,
       status: newStatus,
-      date: new Date()
+      date: new Date(),
+      time: '09:00'
     });
     setIsDatePickerOpen(true);
   };
@@ -93,11 +97,16 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
     }
 
     try {
+      // Combine date and time into a single Date object
+      const [hours, minutes] = statusUpdateData.time.split(':');
+      const actionDateTime = new Date(statusUpdateData.date);
+      actionDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+
       const { error } = await supabase
         .from('maker_lab_bookings')
         .update({ 
           status: statusUpdateData.status,
-          action_date: statusUpdateData.date.toISOString()
+          action_date: actionDateTime.toISOString()
         })
         .eq('id', statusUpdateData.bookingId);
 
@@ -109,7 +118,7 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
 
       toast.success(`Booking status updated to ${statusUpdateData.status}`);
       setIsDatePickerOpen(false);
-      setStatusUpdateData({ bookingId: '', status: '', date: undefined });
+      setStatusUpdateData({ bookingId: '', status: '', date: undefined, time: '09:00' });
       fetchConfirmedBookings(); // Refresh the list
     } catch (error) {
       console.error('Error:', error);
@@ -443,16 +452,21 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
                          </div>
                        </TableCell>
                       
-                       <TableCell>
-                         {booking.action_date ? (
-                           <div className="flex items-center gap-1 text-sm">
-                             <Clock className="h-3 w-3 text-muted-foreground" />
-                             {new Date(booking.action_date).toLocaleDateString()}
-                           </div>
-                         ) : (
-                           <span className="text-muted-foreground text-sm">N/A</span>
-                         )}
-                       </TableCell>
+                        <TableCell>
+                          {booking.action_date ? (
+                            <div className="flex items-center gap-1 text-sm">
+                              <Clock className="h-3 w-3 text-muted-foreground" />
+                              <div>
+                                <div>{new Date(booking.action_date).toLocaleDateString()}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {new Date(booking.action_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">N/A</span>
+                          )}
+                        </TableCell>
                      </TableRow>
                    ))}
                  </TableBody>
@@ -463,41 +477,51 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
        )}
 
        {/* Date Picker Dialog for Status Updates */}
-       <Dialog open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
-         <DialogContent className="sm:max-w-md">
-           <DialogHeader>
-             <DialogTitle>Set Action Date</DialogTitle>
-           </DialogHeader>
-           <div className="space-y-4">
-             <p className="text-sm text-muted-foreground">
-               Select the date for status change to "{statusUpdateData.status}"
-             </p>
-             <div className="flex justify-center">
-               <Calendar
-                 mode="single"
-                 selected={statusUpdateData.date}
-                 onSelect={(date) => setStatusUpdateData(prev => ({ ...prev, date }))}
-                 initialFocus
-                 className={cn("p-3 pointer-events-auto")}
-               />
-             </div>
-             <div className="flex gap-2 justify-end">
-               <Button 
-                 variant="outline" 
-                 onClick={() => setIsDatePickerOpen(false)}
-               >
-                 Cancel
-               </Button>
-               <Button 
-                 onClick={updateBookingStatus}
-                 disabled={!statusUpdateData.date}
-               >
-                 Update Status
-               </Button>
-             </div>
-           </div>
-         </DialogContent>
-       </Dialog>
+        <Dialog open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Set Action Date & Time</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Select the date and time for status change to "{statusUpdateData.status}"
+              </p>
+              <div className="flex justify-center">
+                <Calendar
+                  mode="single"
+                  selected={statusUpdateData.date}
+                  onSelect={(date) => setStatusUpdateData(prev => ({ ...prev, date }))}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="time-picker">Time</Label>
+                <Input
+                  id="time-picker"
+                  type="time"
+                  value={statusUpdateData.time}
+                  onChange={(e) => setStatusUpdateData(prev => ({ ...prev, time: e.target.value }))}
+                  className="w-full"
+                />
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsDatePickerOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={updateBookingStatus}
+                  disabled={!statusUpdateData.date}
+                >
+                  Update Status
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
      </div>
   );
 };
