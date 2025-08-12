@@ -7,12 +7,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Calendar, Clock, User, Mail, Phone, ChevronDown, Trash2, CheckCircle, FileSpreadsheet, FileText } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, User, Mail, Phone, ChevronDown, Trash2, CheckCircle, FileSpreadsheet, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 interface ConfirmedBooking {
   id: string;
@@ -38,6 +41,12 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
   const [bookings, setBookings] = useState<ConfirmedBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBookings, setSelectedBookings] = useState<string[]>([]);
+  const [statusUpdateData, setStatusUpdateData] = useState<{bookingId: string, status: string, date: Date | undefined}>({
+    bookingId: '',
+    status: '',
+    date: undefined
+  });
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   const fetchConfirmedBookings = async () => {
     try {
@@ -68,15 +77,29 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
     fetchConfirmedBookings();
   }, []);
 
-  const updateBookingStatus = async (bookingId: string, newStatus: string) => {
+  const handleStatusChange = (bookingId: string, newStatus: string) => {
+    setStatusUpdateData({
+      bookingId,
+      status: newStatus,
+      date: new Date()
+    });
+    setIsDatePickerOpen(true);
+  };
+
+  const updateBookingStatus = async () => {
+    if (!statusUpdateData.bookingId || !statusUpdateData.status || !statusUpdateData.date) {
+      toast.error('Please select a date for the action');
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('maker_lab_bookings')
         .update({ 
-          status: newStatus,
-          action_date: new Date().toISOString()
+          status: statusUpdateData.status,
+          action_date: statusUpdateData.date.toISOString()
         })
-        .eq('id', bookingId);
+        .eq('id', statusUpdateData.bookingId);
 
       if (error) {
         console.error('Error updating booking status:', error);
@@ -84,7 +107,9 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
         return;
       }
 
-      toast.success(`Booking status updated to ${newStatus}`);
+      toast.success(`Booking status updated to ${statusUpdateData.status}`);
+      setIsDatePickerOpen(false);
+      setStatusUpdateData({ bookingId: '', status: '', date: undefined });
       fetchConfirmedBookings(); // Refresh the list
     } catch (error) {
       console.error('Error:', error);
@@ -394,48 +419,85 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
                               <ChevronDown className="h-3 w-3" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            <DropdownMenuItem onClick={() => updateBookingStatus(booking.id, "scheduled")}>
+                           <DropdownMenuContent>
+                            <DropdownMenuItem onClick={() => handleStatusChange(booking.id, "scheduled")}>
                               Scheduled
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateBookingStatus(booking.id, "completed")}>
+                            <DropdownMenuItem onClick={() => handleStatusChange(booking.id, "completed")}>
                               Completed
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateBookingStatus(booking.id, "cancelled")}>
+                            <DropdownMenuItem onClick={() => handleStatusChange(booking.id, "cancelled")}>
                               Cancelled
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateBookingStatus(booking.id, "missed")}>
+                            <DropdownMenuItem onClick={() => handleStatusChange(booking.id, "missed")}>
                               Missed
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
                       
-                      <TableCell>
-                        <div className="flex items-center gap-1 text-sm">
-                          <Calendar className="h-3 w-3 text-muted-foreground" />
-                          {new Date(booking.created_at).toLocaleDateString()}
-                        </div>
-                      </TableCell>
+                       <TableCell>
+                         <div className="flex items-center gap-1 text-sm">
+                           <CalendarIcon className="h-3 w-3 text-muted-foreground" />
+                           {new Date(booking.created_at).toLocaleDateString()}
+                         </div>
+                       </TableCell>
                       
-                      <TableCell>
-                        {booking.action_date ? (
-                          <div className="flex items-center gap-1 text-sm">
-                            <Clock className="h-3 w-3 text-muted-foreground" />
-                            {new Date(booking.action_date).toLocaleDateString()}
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">N/A</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+                       <TableCell>
+                         {booking.action_date ? (
+                           <div className="flex items-center gap-1 text-sm">
+                             <Clock className="h-3 w-3 text-muted-foreground" />
+                             {new Date(booking.action_date).toLocaleDateString()}
+                           </div>
+                         ) : (
+                           <span className="text-muted-foreground text-sm">N/A</span>
+                         )}
+                       </TableCell>
+                     </TableRow>
+                   ))}
+                 </TableBody>
+               </Table>
+             </div>
+           </CardContent>
+         </Card>
+       )}
+
+       {/* Date Picker Dialog for Status Updates */}
+       <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
+         <PopoverContent className="w-auto p-0" align="center">
+           <div className="p-4 space-y-4">
+             <div className="space-y-2">
+               <h4 className="font-medium">Set Action Date</h4>
+               <p className="text-sm text-muted-foreground">
+                 Select the date for status change to "{statusUpdateData.status}"
+               </p>
+             </div>
+             <Calendar
+               mode="single"
+               selected={statusUpdateData.date}
+               onSelect={(date) => setStatusUpdateData(prev => ({ ...prev, date }))}
+               initialFocus
+               className={cn("p-3 pointer-events-auto")}
+             />
+             <div className="flex gap-2 justify-end">
+               <Button 
+                 variant="outline" 
+                 size="sm"
+                 onClick={() => setIsDatePickerOpen(false)}
+               >
+                 Cancel
+               </Button>
+               <Button 
+                 size="sm"
+                 onClick={updateBookingStatus}
+                 disabled={!statusUpdateData.date}
+               >
+                 Update Status
+               </Button>
+             </div>
+           </div>
+         </PopoverContent>
+       </Popover>
+     </div>
   );
 };
