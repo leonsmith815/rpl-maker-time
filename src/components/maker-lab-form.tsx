@@ -399,7 +399,7 @@ export function MakerLabForm() {
                 Please select one piece of equipment for your session.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {equipment.map(item => <EquipmentCard key={item} name={item} isSelected={selectedEquipment === item} onSelect={() => handleEquipmentSelect(item)} disabled={item === "Laser Cutter"} />)}
+                {equipment.map(item => <EquipmentCard key={item} name={item} isSelected={selectedEquipment === item} onSelect={() => handleEquipmentSelect(item)} disabled={item === "Laser Cutter" || item === "Sewing Machines"} />)}
               </div>
             </div>
           </div>
