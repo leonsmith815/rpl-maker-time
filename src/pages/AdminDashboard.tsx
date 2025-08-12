@@ -153,31 +153,40 @@ export default function AdminDashboard() {
 
       // Find the booking to get customer details for email
       const booking = bookings.find(b => b.id === bookingId);
+      console.log("🔍 Found booking for email:", booking);
+      
       if (booking) {
         // Send email notification using secure EmailJS edge function
+        console.log("📧 Attempting to send email notification...");
         try {
-          const { error: emailError } = await supabase.functions.invoke('send-emailjs-notification', {
-            body: {
-              email: booking.email,
-              fullName: booking.full_name,
-              status: newStatus,
-              selectedDates: booking.selected_dates,
-              selectedTimeSlots: booking.selected_time_slots,
-              selectedEquipment: booking.selected_equipment,
-              actionDate: actionDate
-            }
+          const emailPayload = {
+            email: booking.email,
+            fullName: booking.full_name,
+            status: newStatus,
+            selectedDates: booking.selected_dates,
+            selectedTimeSlots: booking.selected_time_slots,
+            selectedEquipment: booking.selected_equipment,
+            actionDate: actionDate
+          };
+          
+          console.log("📤 Email payload:", emailPayload);
+          
+          const { data, error: emailError } = await supabase.functions.invoke('send-emailjs-notification', {
+            body: emailPayload
           });
 
           if (emailError) {
-            console.error("Failed to send email notification:", emailError);
+            console.error("❌ Failed to send email notification:", emailError);
             // Don't fail the status update if email fails
           } else {
-            console.log("Email notification sent successfully");
+            console.log("✅ Email notification sent successfully:", data);
           }
         } catch (emailError) {
-          console.error("Error sending email notification:", emailError);
+          console.error("💥 Error sending email notification:", emailError);
           // Don't fail the status update if email fails
         }
+      } else {
+        console.log("⚠️ No booking found for email notification");
       }
 
       // Update local state
