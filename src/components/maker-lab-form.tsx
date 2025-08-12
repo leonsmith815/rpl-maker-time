@@ -171,6 +171,7 @@ export function MakerLabForm() {
 
       // Send email using EmailJS
       if (window.emailjs) {
+        console.log('About to send email with service: service_c5hnxps, template: template_s5pm6ri');
         const response = await window.emailjs.send(
           'service_c5hnxps',
           'template_s5pm6ri',
@@ -178,7 +179,13 @@ export function MakerLabForm() {
           'ExUWNRz9bRhzQFxBM'
         );
 
-        console.log('Email sent successfully:', response);
+        console.log('EmailJS raw response:', response);
+        
+        if (response.status === 200) {
+          console.log('Email sent successfully with status 200');
+        } else {
+          console.warn('EmailJS returned non-200 status:', response.status, response.text);
+        }
 
         toast({
           title: "Success!",
