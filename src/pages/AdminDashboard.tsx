@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Download, LogOut, FileText, Users, ChevronDown, Trash2, CalendarIcon, Clock } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -63,6 +64,7 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [selectedBookings, setSelectedBookings] = useState<string[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -425,6 +427,52 @@ export default function AdminDashboard() {
     }
   };
 
+  const deleteSelectedBookings = async () => {
+    if (selectedBookings.length === 0) return;
+
+    try {
+      const { error } = await supabase
+        .from("maker_lab_bookings")
+        .delete()
+        .in("id", selectedBookings);
+
+      if (error) {
+        throw error;
+      }
+
+      // Update local state by removing the deleted bookings
+      setBookings(bookings.filter(booking => !selectedBookings.includes(booking.id)));
+      setSelectedBookings([]);
+
+      toast({
+        title: "Bookings Deleted",
+        description: `${selectedBookings.length} bookings have been permanently deleted`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete selected bookings",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const toggleBookingSelection = (bookingId: string) => {
+    setSelectedBookings(prev => 
+      prev.includes(bookingId) 
+        ? prev.filter(id => id !== bookingId)
+        : [...prev, bookingId]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedBookings.length === bookings.length) {
+      setSelectedBookings([]);
+    } else {
+      setSelectedBookings(bookings.map(booking => booking.id));
+    }
+  };
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate("/admin-auth");
@@ -610,16 +658,46 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Export Buttons */}
-        <div className="flex gap-4 mb-6">
-          <Button onClick={exportToExcel} className="gap-2">
-            <Download className="w-4 h-4" />
-            Export to Excel
-          </Button>
-          <Button onClick={exportToPDF} variant="outline" className="gap-2">
-            <Download className="w-4 h-4" />
-            Export to PDF
-          </Button>
+        {/* Export Buttons and Bulk Actions */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex gap-4">
+            <Button onClick={exportToExcel} className="gap-2">
+              <Download className="w-4 h-4" />
+              Export to Excel
+            </Button>
+            <Button onClick={exportToPDF} variant="outline" className="gap-2">
+              <Download className="w-4 h-4" />
+              Export to PDF
+            </Button>
+          </div>
+          
+          {selectedBookings.length > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="gap-2">
+                  <Trash2 className="w-4 h-4" />
+                  Delete Selected ({selectedBookings.length})
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Selected Bookings</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete {selectedBookings.length} selected booking{selectedBookings.length > 1 ? 's' : ''} and remove all associated data from the database.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={deleteSelectedBookings}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete Permanently
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </div>
 
         {/* Bookings Table */}
@@ -632,6 +710,13 @@ export default function AdminDashboard() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[50px]">
+                      <Checkbox
+                        checked={selectedBookings.length === bookings.length && bookings.length > 0}
+                        onCheckedChange={toggleSelectAll}
+                        aria-label="Select all bookings"
+                      />
+                    </TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Phone</TableHead>
@@ -648,6 +733,13 @@ export default function AdminDashboard() {
                 <TableBody>
                   {bookings.map((booking) => (
                     <TableRow key={booking.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedBookings.includes(booking.id)}
+                          onCheckedChange={() => toggleBookingSelection(booking.id)}
+                          aria-label={`Select ${booking.full_name}'s booking`}
+                        />
+                      </TableCell>
                       <TableCell className="font-medium">{booking.full_name}</TableCell>
                       <TableCell>{booking.email}</TableCell>
                       <TableCell>{booking.phone || "N/A"}</TableCell>
