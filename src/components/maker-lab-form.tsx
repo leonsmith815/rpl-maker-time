@@ -9,6 +9,12 @@ import { EquipmentCard } from "@/components/ui/equipment-card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+
+declare global {
+  interface Window {
+    emailjs: any;
+  }
+}
 import { format } from "date-fns";
 const timeSlots = ["Tuesday 11 AM - 1 PM", "Tuesday 2 PM - 4 PM", "Wednesday 11 AM - 1 PM", "Thursday 11 AM - 1 PM", "Thursday 2 PM - 4 PM", "Friday 11 AM - 1 PM", "Friday 2 PM - 4 PM"];
 const equipment = ["Cricut Make", "Laser Cutter", "3D Printers", "Embroidery Machine", "Sewing Machines", "Brother Serger", "Direct-to-Film (DTF) Printer", "Media Room (Green Screen)", "Recording Studio (Podcast)"];
@@ -175,35 +181,51 @@ export function MakerLabForm() {
         return;
       }
 
-      // Send confirmation email
+      // Send confirmation email using EmailJS
       try {
-        const emailResponse = await supabase.functions.invoke('send-booking-confirmation', {
-          body: {
-            fullName: formData.name,
+        if (window.emailjs) {
+          // Create a temporary form element for EmailJS
+          const tempForm = document.createElement('form');
+          tempForm.style.display = 'none';
+          
+          // Add form fields that match your EmailJS template
+          const fields = {
+            name: formData.name,
             email: formData.email,
             phone: formData.phone,
-            accessOption: accessOption,
-            selectedDates: dateStrings,
-            selectedTimeSlots: selectedTimeSlots,
-            selectedEquipment: [selectedEquipment],
-            preferredDate: format(new Date(), "yyyy-MM-dd")
-          }
-        });
+            access_type: accessOption === 'training' ? 'Training Session' : 'Appointment',
+            selected_dates: dateStrings.join(', '),
+            selected_time_slots: selectedTimeSlots.join(', '),
+            selected_equipment: selectedEquipment,
+            submission_date: format(new Date(), "yyyy-MM-dd")
+          };
 
-        if (emailResponse.error) {
-          console.error('Email error:', emailResponse.error);
-          toast({
-            title: "Booking submitted!",
-            description: "Your booking was saved but we couldn't send the confirmation email. We'll contact you based on availability.",
+          Object.keys(fields).forEach(key => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = fields[key as keyof typeof fields];
+            tempForm.appendChild(input);
           });
-        } else {
+
+          document.body.appendChild(tempForm);
+
+          await window.emailjs.sendForm('service_c5hnxps', 'template_s5pm6ri', tempForm);
+          
+          document.body.removeChild(tempForm);
+
           toast({
             title: "Booking submitted!",
             description: "Confirmation email sent! We'll contact you based on availability. Thank you!"
           });
+        } else {
+          toast({
+            title: "Booking submitted!",
+            description: "Your booking was saved but email service is unavailable. We'll contact you based on availability.",
+          });
         }
       } catch (emailError) {
-        console.error('Email sending failed:', emailError);
+        console.error('EmailJS sending failed:', emailError);
         toast({
           title: "Booking submitted!",
           description: "Your booking was saved but we couldn't send the confirmation email. We'll contact you based on availability.",
