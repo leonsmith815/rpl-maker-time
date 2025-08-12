@@ -1,7 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -260,18 +257,20 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { subject, html } = generateEmailContent(data);
 
-    const emailResponse = await resend.emails.send({
-      from: "Maker Lab <onboarding@resend.dev>",
-      to: [email],
-      subject: subject,
-      html: html,
+    // Log the notification details for admin tracking
+    console.log("Notification details:", {
+      email,
+      fullName,
+      status: data.status,
+      subject,
+      actionDate: data.actionDate
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    console.log("Notification processed successfully");
 
     return new Response(JSON.stringify({ 
       success: true, 
-      emailId: emailResponse.data?.id 
+      message: "Notification logged successfully" 
     }), {
       status: 200,
       headers: {
