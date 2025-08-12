@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, Settings, User, Mail, Phone, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import { BookingRequestsExport } from "./booking-requests-export";
 
 interface BookingRequest {
   id: string;
@@ -119,8 +120,12 @@ export const BookingRequestsTab = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Pending Booking Requests</h2>
-        <Badge variant="secondary">{requests.length} requests</Badge>
+        <div className="flex items-center gap-4">
+          <h2 className="text-2xl font-bold">Pending Booking Requests</h2>
+          <Badge variant="secondary">{requests.length} requests</Badge>
+        </div>
+        
+        <BookingRequestsExport requests={requests} />
       </div>
 
       <div className="grid gap-4">
