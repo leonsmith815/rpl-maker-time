@@ -184,90 +184,14 @@ export function MakerLabForm() {
       // Send confirmation email using EmailJS
       try {
         if (window.emailjs) {
-          const emailHtml = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <meta charset="utf-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>RPL Maker Lab Booking Confirmation</title>
-            </head>
-            <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc;">
-              <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-                
-                <!-- Header -->
-                <div style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); padding: 32px 24px; text-align: center;">
-                  <h1 style="margin: 0; color: white; font-size: 28px; font-weight: bold;">RPL Maker Lab</h1>
-                  <p style="margin: 8px 0 0 0; color: rgba(255, 255, 255, 0.9); font-size: 18px;">Booking Confirmation</p>
-                </div>
-
-                <!-- Thank You Section -->
-                <div style="background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%); padding: 24px; text-align: center;">
-                  <h2 style="margin: 0; color: white; font-size: 20px; font-weight: bold;">Thank you for your ${accessOption === 'training' ? 'Training Session' : 'Appointment'} request!</h2>
-                </div>
-
-                <!-- Booking Details -->
-                <div style="padding: 32px 24px;">
-                  <h3 style="margin: 0 0 20px 0; color: #1f2937; font-size: 20px; font-weight: bold; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Booking Details</h3>
-                  
-                  <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
-                    <p style="margin: 0 0 8px 0; color: #374151;"><strong>Name:</strong> ${formData.name}</p>
-                    <p style="margin: 0 0 8px 0; color: #374151;"><strong>Email:</strong> ${formData.email}</p>
-                    <p style="margin: 0 0 8px 0; color: #374151;"><strong>Phone:</strong> ${formData.phone}</p>
-                    <p style="margin: 0 0 8px 0; color: #374151;"><strong>Access Type:</strong> ${accessOption === 'training' ? 'Training Session' : 'Appointment'}</p>
-                    <p style="margin: 0; color: #374151;"><strong>Submission Date:</strong> ${format(new Date(), "yyyy-MM-dd")}</p>
-                  </div>
-
-                  <!-- Preferred Dates -->
-                  <h3 style="margin: 0 0 16px 0; color: #1f2937; font-size: 18px; font-weight: bold;">Preferred Dates:</h3>
-                  <div style="background-color: #eff6ff; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-                    ${dateStrings.map(date => `<p style="margin: 4px 0; color: #1e40af; font-weight: 500;">• ${date}</p>`).join('')}
-                  </div>
-
-                  <!-- Time Slots -->
-                  <h3 style="margin: 0 0 16px 0; color: #1f2937; font-size: 18px; font-weight: bold;">Preferred Time Slots:</h3>
-                  <div style="background-color: #f0f9ff; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-                    ${selectedTimeSlots.map(slot => `<p style="margin: 4px 0; color: #0369a1; font-weight: 500;">• ${slot}</p>`).join('')}
-                  </div>
-
-                  <!-- Selected Equipment -->
-                  <h3 style="margin: 0 0 16px 0; color: #1f2937; font-size: 18px; font-weight: bold;">Selected Equipment:</h3>
-                  <div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin-bottom: 32px;">
-                    <p style="margin: 0; color: #166534; font-weight: 500; font-size: 16px;">${selectedEquipment}</p>
-                  </div>
-
-                  <!-- What Happens Next -->
-                  <h3 style="margin: 0 0 20px 0; color: #1f2937; font-size: 20px; font-weight: bold; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">What happens next?</h3>
-                  <div style="background-color: #fefce8; padding: 20px; border-radius: 8px; border-left: 4px solid #eab308;">
-                    <p style="margin: 0 0 12px 0; color: #713f12; font-weight: 500;">• We'll review your request and check availability</p>
-                    <p style="margin: 0 0 12px 0; color: #713f12; font-weight: 500;">• You'll receive a confirmation email with your scheduled time</p>
-                    <p style="margin: 0 0 12px 0; color: #713f12; font-weight: 500;">• Please arrive 5 minutes early for your session</p>
-                    <p style="margin: 0; color: #713f12; font-weight: 500;">• Bring a valid ID and be ready to create!</p>
-                  </div>
-
-                  <!-- Contact Info -->
-                  <div style="background-color: #f1f5f9; padding: 20px; border-radius: 8px; text-align: center; margin-top: 32px;">
-                    <p style="margin: 0 0 8px 0; color: #475569; font-size: 16px;"><strong>Questions? Contact us at</strong></p>
-                    <p style="margin: 0; color: #3b82f6; font-size: 18px; font-weight: bold;">makerlab@rpl.org</p>
-                  </div>
-                </div>
-
-                <!-- Footer -->
-                <div style="background: linear-gradient(135deg, #1e293b 0%, #475569 100%); padding: 24px; text-align: center;">
-                  <h3 style="margin: 0 0 8px 0; color: white; font-size: 20px; font-weight: bold;">Rockford Public Library Maker Lab</h3>
-                  <p style="margin: 0; color: rgba(255, 255, 255, 0.8); font-size: 16px; font-style: italic;">Where Innovation Meets Creation</p>
-                </div>
-
-              </div>
-            </body>
-            </html>
-          `;
-
-          await window.emailjs.send('service_c5hnxps', 'template_s5pm6ri2', {
-            to_email: formData.email,
-            to_name: formData.name,
-            subject: "RPL Maker Lab - Booking Confirmation",
-            html_content: emailHtml
+          await window.emailjs.send('service_c5hnxps', 'template_s5pm6ri', {
+            user_name: formData.name,
+            user_email: formData.email,
+            user_phone: formData.phone,
+            lab_access: accessOption === 'training' ? 'Training Session' : 'Appointment',
+            preferred_dates: dateStrings.join(', '),
+            time_slots: selectedTimeSlots.join(', '),
+            equipment: selectedEquipment
           });
 
           toast({
