@@ -52,23 +52,28 @@ export const BookingRequestsTab = () => {
 
   const approveRequest = async (requestId: string) => {
     try {
+      console.log('🚀 Approving request:', requestId);
+      
       // Call the database function to promote the request to a confirmed booking
       const { data, error } = await supabase.rpc('promote_booking_request_to_confirmed', {
         request_id: requestId,
         assigned_user_id: null // Could assign to a specific user if needed
       });
 
+      console.log('📥 RPC Response:', { data, error });
+
       if (error) {
-        console.error('Error approving request:', error);
-        toast.error('Failed to approve booking request');
+        console.error('❌ Error approving request:', error);
+        toast.error(`Failed to approve booking request: ${error.message}`);
         return;
       }
 
+      console.log('✅ Booking promoted with ID:', data);
       toast.success('Booking request approved and moved to confirmed bookings');
       fetchRequests(); // Refresh the list
-    } catch (error) {
-      console.error('Error:', error);
-      toast.error('Failed to approve booking request');
+    } catch (error: any) {
+      console.error('❌ Unexpected error:', error);
+      toast.error(`Failed to approve booking request: ${error.message || 'Unknown error'}`);
     }
   };
 
