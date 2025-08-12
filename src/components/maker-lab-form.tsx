@@ -263,7 +263,7 @@ export function MakerLabForm() {
             </html>
           `;
 
-          await window.emailjs.send('[YOUR_SERVICE_ID]', '[YOUR_TEMPLATE_ID]', {
+          const emailData = {
             user_name: formData.name,
             user_email: formData.email,
             user_phone: formData.phone,
@@ -271,7 +271,11 @@ export function MakerLabForm() {
             preferred_dates: dateStrings.join(', '),
             time_slots: selectedTimeSlots.join(', '),
             equipment: selectedEquipment
-          });
+          };
+          
+          console.log('Sending email data:', emailData);
+          
+          await window.emailjs.send('[YOUR_SERVICE_ID]', '[YOUR_TEMPLATE_ID]', emailData);
 
           toast({
             title: "Booking submitted!",
