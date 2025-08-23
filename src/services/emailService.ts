@@ -88,7 +88,7 @@ RPL Maker Lab Team`;
 
 export const sendStatusUpdateEmail = async (data: BookingEmailData): Promise<void> => {
   try {
-    console.log('🚀 Starting email send process via frontend EmailJS...');
+    console.log('🚀 Starting email send process via Supabase edge function...');
     console.log('📧 Email request data:', {
       email: data.email,
       fullName: data.fullName,
@@ -97,36 +97,25 @@ export const sendStatusUpdateEmail = async (data: BookingEmailData): Promise<voi
       equipmentCount: data.selectedEquipment.length
     });
 
-    // Check if EmailJS is available
-    if (!window.emailjs) {
-      throw new Error('EmailJS is not loaded');
-    }
-
-    const emailContent = getEmailContent(
-      data.fullName,
-      data.status,
-      data.selectedDates,
-      data.selectedTimeSlots,
-      data.selectedEquipment,
-      data.actionDate
-    );
-
-    const subject = getEmailSubject(data.status);
-
-    // Send email using EmailJS from frontend
-    const response = await window.emailjs.send('service_c5hnxps', 'template_2ss175v', {
-      to_email: data.email,
-      customer_name: data.fullName,
-      from_name: 'RPL Maker Lab',
-      subject: subject,
-      message_content: emailContent,
-      equipment_list: data.selectedEquipment.join(', '),
-      selected_dates: data.selectedDates.join(', '),
-      selected_time_slots: data.selectedTimeSlots.join(', '),
-      status: data.status
+    // Send email using Supabase edge function
+    const { data: response, error } = await supabase.functions.invoke('send-status-email', {
+      body: {
+        email: data.email,
+        fullName: data.fullName,
+        status: data.status,
+        selectedDates: data.selectedDates,
+        selectedTimeSlots: data.selectedTimeSlots,
+        selectedEquipment: data.selectedEquipment,
+        actionDate: data.actionDate
+      }
     });
 
-    console.log('✅ Email sent successfully via frontend EmailJS!');
+    if (error) {
+      console.error('❌ Supabase function error:', error);
+      throw new Error(`Supabase function error: ${error.message}`);
+    }
+
+    console.log('✅ Email sent successfully via Supabase edge function!');
     console.log('📬 Email details:', {
       recipient: data.email,
       status: data.status,
