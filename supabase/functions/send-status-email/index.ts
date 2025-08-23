@@ -137,123 +137,54 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const requestData: StatusEmailRequest = await req.json();
-    console.log("📧 Status email request received:", {
-      email: requestData.email,
-      status: requestData.status,
-      customer: requestData.fullName
+    const data: StatusEmailRequest = await req.json();
+    console.log("📧 Status email request received:", { 
+      email: data.email, 
+      status: data.status, 
+      customer: data.fullName 
     });
 
-    // Get EmailJS credentials from environment
-    const EMAILJS_SERVICE_ID = Deno.env.get("EMAILJS_SERVICE_ID") || "service_c5hnxps";
-    const EMAILJS_TEMPLATE_ID = Deno.env.get("EMAILJS_TEMPLATE_ID") || "template_2ss175v";
-    const EMAILJS_PUBLIC_KEY = Deno.env.get("EMAILJS_PUBLIC_KEY") || "ExUWNRz9bRhzQFxBM";
-    const EMAILJS_PRIVATE_KEY = Deno.env.get("EMAILJS_PRIVATE_KEY");
-
-    console.log("🔑 EmailJS Config:", {
-      serviceId: EMAILJS_SERVICE_ID,
-      templateId: EMAILJS_TEMPLATE_ID,
-      publicKey: EMAILJS_PUBLIC_KEY?.substring(0, 8) + "...",
-      hasPrivateKey: !!EMAILJS_PRIVATE_KEY
-    });
-
-    if (!EMAILJS_PRIVATE_KEY) {
-      console.error("❌ Missing EMAILJS_PRIVATE_KEY");
-      throw new Error("EMAILJS_PRIVATE_KEY environment variable is required for server-side EmailJS calls");
-    }
-
-    // Format data for email
-    const formattedDates = requestData.selectedDates.join(', ');
-    const equipmentList = requestData.selectedEquipment.join(', ');
-    const timeSlots = requestData.selectedTimeSlots.join(', ');
-
-    // Generate email content
-    const emailSubject = getEmailSubject(requestData.status);
-    const emailBody = getEmailContent(
-      requestData.status, 
-      requestData.fullName, 
-      formattedDates, 
-      equipmentList, 
-      timeSlots
-    );
-
-    // Prepare EmailJS template parameters
-    const templateParams = {
-      to_name: requestData.fullName,
-      to_email: requestData.email,
-      from_name: 'Rockford Public Library Maker Lab',
-      from_email: 'Maker@rockfordpubliclibrary.org',
-      reply_to: 'Maker@rockfordpubliclibrary.org',
-      subject: emailSubject,
-      message: emailBody,
-      customer_name: requestData.fullName,
-      status: requestData.status,
-      selected_dates: formattedDates,
-      equipment: equipmentList,
-      time_slots: timeSlots
-    };
-
-    console.log("📤 Sending email via EmailJS:", {
-      service: EMAILJS_SERVICE_ID,
-      template: EMAILJS_TEMPLATE_ID,
-      to: requestData.email,
-      subject: emailSubject,
-      templateParamsKeys: Object.keys(templateParams)
-    });
-
-    // Send email via EmailJS REST API
-    const emailResponse = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+    // Use the send-emailjs-notification function which is properly configured for EmailJS
+    const emailjsResponse = await fetch(`https://ztlmftmpobqfyauayxkj.supabase.co/functions/v1/send-emailjs-notification`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0bG1mdG1wb2JxZnlhdWF5eGtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDczMDEsImV4cCI6MjA3MDA4MzMwMX0.MZ0irP-UkC13UU70hW1u46o56nvOkyVZoutdpWzkAHk`,
       },
-      body: JSON.stringify({
-        service_id: EMAILJS_SERVICE_ID,
-        template_id: EMAILJS_TEMPLATE_ID,
-        user_id: EMAILJS_PUBLIC_KEY,
-        accessToken: EMAILJS_PRIVATE_KEY,
-        template_params: templateParams
-      })
+      body: JSON.stringify(data),
     });
 
-    console.log("📡 EmailJS API Response Status:", emailResponse.status);
-
-    if (!emailResponse.ok) {
-      const errorText = await emailResponse.text();
-      console.error("❌ EmailJS API Error Details:", {
-        status: emailResponse.status,
-        statusText: emailResponse.statusText,
-        error: errorText,
-        headers: Object.fromEntries(emailResponse.headers.entries())
-      });
-      throw new Error(`EmailJS API error: ${emailResponse.status} - ${errorText}`);
+    if (!emailjsResponse.ok) {
+      const errorText = await emailjsResponse.text();
+      console.error('❌ EmailJS notification failed:', errorText);
+      throw new Error(`EmailJS notification failed: ${emailjsResponse.status} - ${errorText}`);
     }
 
-    const responseText = await emailResponse.text();
-    console.log("✅ EmailJS Success Response:", responseText);
+    const emailResult = await emailjsResponse.json();
+    console.log('✅ Email sent successfully via EmailJS:', emailResult);
 
-    return new Response(JSON.stringify({ 
-      success: true, 
-      message: "Status update email sent successfully via EmailJS",
-      emailjsResponse: responseText
-    }), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
-    });
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: 'Email notification sent successfully',
+        emailResponse: emailResult 
+      }),
+      { 
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
 
   } catch (error: any) {
     console.error("❌ Error sending status email:", error);
     return new Response(
       JSON.stringify({ 
-        success: false, 
-        error: error.message || "Failed to send status update email" 
+        error: error.message,
+        details: 'Failed to send email notification'
       }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+      { 
+        status: 500, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
     );
   }
