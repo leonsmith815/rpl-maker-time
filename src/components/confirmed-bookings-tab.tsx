@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -448,34 +449,16 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
                       </TableCell>
                       
                       <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="gap-2 min-w-24 justify-between"
-                            >
-                              <Badge variant={getStatusBadgeVariant(booking.status)}>
-                                {booking.status}
-                              </Badge>
-                              <ChevronDown className="h-3 w-3" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                           <DropdownMenuContent>
-                            <DropdownMenuItem onClick={() => handleStatusChange(booking.id, "scheduled")}>
-                              Scheduled
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleStatusChange(booking.id, "completed")}>
-                              Completed
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleStatusChange(booking.id, "cancelled")}>
-                              Cancelled
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleStatusChange(booking.id, "missed")}>
-                              Missed
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <Select onValueChange={(value) => handleStatusChange(booking.id, value)}>
+                          <SelectTrigger className="w-32">
+                            <SelectValue placeholder="Select" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="scheduled">Scheduled</SelectItem>
+                            <SelectItem value="cancelled">Cancelled</SelectItem>
+                            <SelectItem value="missed">Missed</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                       
                        <TableCell>
