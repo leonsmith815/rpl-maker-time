@@ -176,55 +176,48 @@ export function MakerLabForm() {
 
       if (error) {
         console.error('Database error:', error);
-        
-        // Check if it's a frequency limit error
-        if (error.message?.includes("7 days")) {
-          toast({
-            title: "Booking limit reached",
-            description: "You can only submit one booking request every 7 days. Please wait before making another request.",
-            variant: "destructive"
-          });
-        } else {
-          toast({
-            title: "Submission failed",
-            description: "There was an error submitting your booking request. Please try again.",
-            variant: "destructive"
-          });
-        }
+        toast({
+          title: "Submission failed",
+          description: "There was an error submitting your booking request. Please try again.",
+          variant: "destructive"
+        });
         return;
       }
 
-      // Send confirmation email using the EmailJS edge function
+      // Send confirmation email using EmailJS
       try {
-        const accessTypeText = accessOption === 'training' ? 'Training Session' : 'Appointment';
-        
-        const { error: emailError } = await supabase.functions.invoke('send-emailjs-notification', {
-          body: {
-            fullName: formData.name,
-            email: formData.email,
-            phone: formData.phone,
-            accessOption: accessTypeText,
-            selectedDates: dateStrings,
-            selectedTimeSlots: selectedTimeSlots,
-            selectedEquipment: [selectedEquipment],
-            status: 'pending'
-          }
-        });
+        if (window.emailjs) {
+          // Format dates and time slots for email
+          const formattedDates = dateStrings.map(date => `• ${date}`).join('\n');
+          const formattedTimeSlots = selectedTimeSlots.map(slot => `• ${slot}`).join('\n');
+          const accessTypeText = accessOption === 'training' ? 'Training Session' : 'Appointment';
 
-        if (emailError) {
-          console.error('Email sending failed:', emailError);
-          toast({
-            title: "Booking submitted!",
-            description: "Your booking was saved but we couldn't send the confirmation email. We'll contact you based on availability.",
+          await window.emailjs.send('service_c5hnxps', 'template_s5pm6ri2', {
+            to_email: formData.email,
+            to_name: formData.name,
+            subject: "RPL Maker Lab - Booking Confirmation",
+            user_name: formData.name,
+            user_email: formData.email,
+            user_phone: formData.phone,
+            access_type: accessTypeText,
+            submission_date: format(new Date(), "yyyy-MM-dd"),
+            preferred_dates: formattedDates,
+            time_slots: formattedTimeSlots,
+            equipment: selectedEquipment
           });
-        } else {
+
           toast({
             title: "Booking submitted!",
             description: "Confirmation email sent! We'll contact you based on availability. Thank you!"
           });
+        } else {
+          toast({
+            title: "Booking submitted!",
+            description: "Your booking was saved but email service is unavailable. We'll contact you based on availability.",
+          });
         }
       } catch (emailError) {
-        console.error('Email sending failed:', emailError);
+        console.error('EmailJS sending failed:', emailError);
         toast({
           title: "Booking submitted!",
           description: "Your booking was saved but we couldn't send the confirmation email. We'll contact you based on availability.",
