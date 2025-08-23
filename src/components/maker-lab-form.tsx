@@ -194,40 +194,37 @@ export function MakerLabForm() {
         return;
       }
 
-      // Send confirmation email using EmailJS
+      // Send confirmation email using the EmailJS edge function
       try {
-        if (window.emailjs) {
-          // Format dates and time slots for email
-          const formattedDates = dateStrings.map(date => `• ${date}`).join('\n');
-          const formattedTimeSlots = selectedTimeSlots.map(slot => `• ${slot}`).join('\n');
-          const accessTypeText = accessOption === 'training' ? 'Training Session' : 'Appointment';
+        const accessTypeText = accessOption === 'training' ? 'Training Session' : 'Appointment';
+        
+        const { error: emailError } = await supabase.functions.invoke('send-emailjs-notification', {
+          body: {
+            fullName: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            accessOption: accessTypeText,
+            selectedDates: dateStrings,
+            selectedTimeSlots: selectedTimeSlots,
+            selectedEquipment: [selectedEquipment],
+            status: 'pending'
+          }
+        });
 
-          await window.emailjs.send('service_c5hnxps', 'template_s5pm6ri2', {
-            to_email: formData.email,
-            to_name: formData.name,
-            subject: "RPL Maker Lab - Booking Confirmation",
-            user_name: formData.name,
-            user_email: formData.email,
-            user_phone: formData.phone,
-            access_type: accessTypeText,
-            submission_date: format(new Date(), "yyyy-MM-dd"),
-            preferred_dates: formattedDates,
-            time_slots: formattedTimeSlots,
-            equipment: selectedEquipment
-          });
-
+        if (emailError) {
+          console.error('Email sending failed:', emailError);
           toast({
             title: "Booking submitted!",
-            description: "Confirmation email sent! We'll contact you based on availability. Thank you!"
+            description: "Your booking was saved but we couldn't send the confirmation email. We'll contact you based on availability.",
           });
         } else {
           toast({
             title: "Booking submitted!",
-            description: "Your booking was saved but email service is unavailable. We'll contact you based on availability.",
+            description: "Confirmation email sent! We'll contact you based on availability. Thank you!"
           });
         }
       } catch (emailError) {
-        console.error('EmailJS sending failed:', emailError);
+        console.error('Email sending failed:', emailError);
         toast({
           title: "Booking submitted!",
           description: "Your booking was saved but we couldn't send the confirmation email. We'll contact you based on availability.",
