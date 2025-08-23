@@ -102,6 +102,20 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
       const actionDateTime = new Date(statusUpdateData.date);
       actionDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
+      // Get the booking details before updating
+      const { data: bookingData, error: fetchError } = await supabase
+        .from('maker_lab_bookings')
+        .select('*')
+        .eq('id', statusUpdateData.bookingId)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching booking details:', fetchError);
+        toast.error('Failed to fetch booking details');
+        return;
+      }
+
+      // Update the booking status
       const { error } = await supabase
         .from('maker_lab_bookings')
         .update({ 
@@ -114,6 +128,25 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
         console.error('Error updating booking status:', error);
         toast.error('Failed to update booking status');
         return;
+      }
+
+      // Send status update email
+      try {
+        const { sendStatusUpdateEmail } = await import('@/services/emailService');
+        await sendStatusUpdateEmail({
+          email: bookingData.email,
+          fullName: bookingData.full_name,
+          status: statusUpdateData.status,
+          selectedDates: bookingData.selected_dates,
+          selectedTimeSlots: bookingData.selected_time_slots,
+          selectedEquipment: bookingData.selected_equipment,
+          actionDate: actionDateTime.toISOString()
+        });
+        console.log('✅ Status update email sent successfully');
+      } catch (emailError) {
+        console.error('❌ Failed to send status update email:', emailError);
+        // Don't fail the entire operation if email fails
+        toast.warning('Booking updated but email notification failed to send');
       }
 
       toast.success(`Booking status updated to ${statusUpdateData.status}`);
