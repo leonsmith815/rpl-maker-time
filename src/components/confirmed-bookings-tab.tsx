@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -48,7 +49,7 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
     bookingId: '',
     status: '',
     date: undefined,
-    time: '09:00'
+    time: '11:00'
   });
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
@@ -86,7 +87,7 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
       bookingId,
       status: newStatus,
       date: new Date(),
-      time: '09:00'
+      time: '11:00'
     });
     setIsDatePickerOpen(true);
   };
@@ -152,7 +153,7 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
 
       toast.success(`Booking status updated to ${statusUpdateData.status}`);
       setIsDatePickerOpen(false);
-      setStatusUpdateData({ bookingId: '', status: '', date: undefined, time: '09:00' });
+      setStatusUpdateData({ bookingId: '', status: '', date: undefined, time: '11:00' });
       fetchConfirmedBookings(); // Refresh the list
     } catch (error) {
       console.error('Error:', error);
@@ -511,15 +512,22 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
                   className={cn("p-3 pointer-events-auto")}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="time-picker">Time</Label>
-                <Input
-                  id="time-picker"
-                  type="time"
-                  value={statusUpdateData.time}
-                  onChange={(e) => setStatusUpdateData(prev => ({ ...prev, time: e.target.value }))}
-                  className="w-full"
-                />
+              <div className="space-y-3">
+                <Label>Appointment Time</Label>
+                <RadioGroup 
+                  value={statusUpdateData.time} 
+                  onValueChange={(value) => setStatusUpdateData(prev => ({ ...prev, time: value }))}
+                  className="flex gap-6"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="11:00" id="time-11am" />
+                    <Label htmlFor="time-11am">11:00 AM</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="14:00" id="time-2pm" />
+                    <Label htmlFor="time-2pm">2:00 PM</Label>
+                  </div>
+                </RadioGroup>
               </div>
               <div className="flex gap-2 justify-end">
                 <Button 
