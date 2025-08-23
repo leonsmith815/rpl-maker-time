@@ -5,9 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -49,7 +47,7 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
     bookingId: '',
     status: '',
     date: undefined,
-    time: '11:00'
+    time: '09:00'
   });
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
@@ -87,7 +85,7 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
       bookingId,
       status: newStatus,
       date: new Date(),
-      time: '11:00'
+      time: '09:00'
     });
     setIsDatePickerOpen(true);
   };
@@ -104,20 +102,6 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
       const actionDateTime = new Date(statusUpdateData.date);
       actionDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
-      // Get the booking details before updating
-      const { data: bookingData, error: fetchError } = await supabase
-        .from('maker_lab_bookings')
-        .select('*')
-        .eq('id', statusUpdateData.bookingId)
-        .single();
-
-      if (fetchError) {
-        console.error('Error fetching booking details:', fetchError);
-        toast.error('Failed to fetch booking details');
-        return;
-      }
-
-      // Update the booking status
       const { error } = await supabase
         .from('maker_lab_bookings')
         .update({ 
@@ -132,28 +116,9 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
         return;
       }
 
-      // Send status update email
-      try {
-        const { sendStatusUpdateEmail } = await import('@/services/emailService');
-        await sendStatusUpdateEmail({
-          email: bookingData.email,
-          fullName: bookingData.full_name,
-          status: statusUpdateData.status,
-          selectedDates: bookingData.selected_dates,
-          selectedTimeSlots: bookingData.selected_time_slots,
-          selectedEquipment: bookingData.selected_equipment,
-          actionDate: actionDateTime.toISOString()
-        });
-        console.log('✅ Status update email sent successfully');
-      } catch (emailError) {
-        console.error('❌ Failed to send status update email:', emailError);
-        // Don't fail the entire operation if email fails
-        toast.warning('Booking updated but email notification failed to send');
-      }
-
       toast.success(`Booking status updated to ${statusUpdateData.status}`);
       setIsDatePickerOpen(false);
-      setStatusUpdateData({ bookingId: '', status: '', date: undefined, time: '11:00' });
+      setStatusUpdateData({ bookingId: '', status: '', date: undefined, time: '09:00' });
       fetchConfirmedBookings(); // Refresh the list
     } catch (error) {
       console.error('Error:', error);
@@ -450,16 +415,34 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
                       </TableCell>
                       
                       <TableCell>
-                        <Select onValueChange={(value) => handleStatusChange(booking.id, value)}>
-                          <SelectTrigger className="w-32">
-                            <SelectValue placeholder="Select" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="scheduled">Scheduled</SelectItem>
-                            <SelectItem value="cancelled">Cancelled</SelectItem>
-                            <SelectItem value="missed">Missed</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="gap-2 min-w-24 justify-between"
+                            >
+                              <Badge variant={getStatusBadgeVariant(booking.status)}>
+                                {booking.status}
+                              </Badge>
+                              <ChevronDown className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                           <DropdownMenuContent>
+                            <DropdownMenuItem onClick={() => handleStatusChange(booking.id, "scheduled")}>
+                              Scheduled
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleStatusChange(booking.id, "completed")}>
+                              Completed
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleStatusChange(booking.id, "cancelled")}>
+                              Cancelled
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleStatusChange(booking.id, "missed")}>
+                              Missed
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                       
                        <TableCell>
@@ -512,22 +495,15 @@ export const ConfirmedBookingsTab = ({ onCountChange }: ConfirmedBookingsTabProp
                   className={cn("p-3 pointer-events-auto")}
                 />
               </div>
-              <div className="space-y-3">
-                <Label>Appointment Time</Label>
-                <RadioGroup 
-                  value={statusUpdateData.time} 
-                  onValueChange={(value) => setStatusUpdateData(prev => ({ ...prev, time: value }))}
-                  className="flex gap-6"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="11:00" id="time-11am" />
-                    <Label htmlFor="time-11am">11:00 AM</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="14:00" id="time-2pm" />
-                    <Label htmlFor="time-2pm">2:00 PM</Label>
-                  </div>
-                </RadioGroup>
+              <div className="space-y-2">
+                <Label htmlFor="time-picker">Time</Label>
+                <Input
+                  id="time-picker"
+                  type="time"
+                  value={statusUpdateData.time}
+                  onChange={(e) => setStatusUpdateData(prev => ({ ...prev, time: e.target.value }))}
+                  className="w-full"
+                />
               </div>
               <div className="flex gap-2 justify-end">
                 <Button 
