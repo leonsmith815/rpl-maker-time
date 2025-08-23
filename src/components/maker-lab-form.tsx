@@ -176,11 +176,21 @@ export function MakerLabForm() {
 
       if (error) {
         console.error('Database error:', error);
-        toast({
-          title: "Submission failed",
-          description: "There was an error submitting your booking request. Please try again.",
-          variant: "destructive"
-        });
+        
+        // Check if it's a frequency limit error
+        if (error.message?.includes("7 days")) {
+          toast({
+            title: "Booking limit reached",
+            description: "You can only submit one booking request every 7 days. Please wait before making another request.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Submission failed",
+            description: "There was an error submitting your booking request. Please try again.",
+            variant: "destructive"
+          });
+        }
         return;
       }
 
