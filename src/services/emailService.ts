@@ -10,9 +10,85 @@ interface BookingEmailData {
   actionDate?: string;
 }
 
+const getEmailSubject = (status: string): string => {
+  switch (status) {
+    case 'scheduled':
+      return 'Your Maker Lab booking has been scheduled';
+    case 'cancelled':
+      return 'Your Maker Lab booking has been cancelled';
+    case 'missed':
+      return 'Missed Maker Lab booking notification';
+    default:
+      return `Maker Lab booking status update: ${status}`;
+  }
+};
+
+const getEmailContent = (
+  fullName: string,
+  status: string,
+  selectedDates: string[],
+  selectedTimeSlots: string[],
+  selectedEquipment: string[],
+  actionDate?: string
+): string => {
+  const equipmentList = selectedEquipment.join(', ');
+  const datesList = selectedDates.join(', ');
+  const timeSlotsList = selectedTimeSlots.join(', ');
+  
+  let statusMessage = '';
+  
+  switch (status) {
+    case 'scheduled':
+      statusMessage = `Great news! Your Maker Lab booking has been officially scheduled.
+
+📅 Scheduled Dates: ${datesList}
+⏰ Time Slots: ${timeSlotsList}
+🔧 Equipment: ${equipmentList}
+
+Please arrive 5 minutes early for your session. If you need to make any changes, please contact us as soon as possible.`;
+      break;
+      
+    case 'cancelled':
+      statusMessage = `We're writing to inform you that your Maker Lab booking has been cancelled.
+
+📅 Originally Scheduled: ${datesList}
+⏰ Time Slots: ${timeSlotsList}
+🔧 Equipment: ${equipmentList}
+
+If you'd like to reschedule, please submit a new booking request through our website.`;
+      break;
+      
+    case 'missed':
+      statusMessage = `We noticed you missed your scheduled Maker Lab session.
+
+📅 Missed Date: ${datesList}
+⏰ Time Slot: ${timeSlotsList}
+🔧 Equipment: ${equipmentList}
+
+If you'd like to reschedule, please submit a new booking request. We understand that schedules can change!`;
+      break;
+      
+    default:
+      statusMessage = `Your Maker Lab booking status has been updated to: ${status}
+
+📅 Dates: ${datesList}
+⏰ Time Slots: ${timeSlotsList}
+🔧 Equipment: ${equipmentList}`;
+  }
+
+  return `Hi ${fullName},
+
+${statusMessage}
+
+If you have any questions, please don't hesitate to contact us.
+
+Best regards,
+RPL Maker Lab Team`;
+};
+
 export const sendStatusUpdateEmail = async (data: BookingEmailData): Promise<void> => {
   try {
-    console.log('🚀 Starting email send process via Supabase Edge Function...');
+    console.log('🚀 Starting email send process via frontend EmailJS...');
     console.log('📧 Email request data:', {
       email: data.email,
       fullName: data.fullName,
@@ -21,39 +97,36 @@ export const sendStatusUpdateEmail = async (data: BookingEmailData): Promise<voi
       equipmentCount: data.selectedEquipment.length
     });
 
-    // Call the Supabase Edge Function
-    const { data: response, error } = await supabase.functions.invoke('send-status-email', {
-      body: {
-        email: data.email,
-        fullName: data.fullName,
-        status: data.status,
-        selectedDates: data.selectedDates,
-        selectedTimeSlots: data.selectedTimeSlots,
-        selectedEquipment: data.selectedEquipment,
-        actionDate: data.actionDate
-      }
+    // Check if EmailJS is available
+    if (!window.emailjs) {
+      throw new Error('EmailJS is not loaded');
+    }
+
+    const emailContent = getEmailContent(
+      data.fullName,
+      data.status,
+      data.selectedDates,
+      data.selectedTimeSlots,
+      data.selectedEquipment,
+      data.actionDate
+    );
+
+    const subject = getEmailSubject(data.status);
+
+    // Send email using EmailJS from frontend
+    const response = await window.emailjs.send('service_c5hnxps', 'template_s5pm6ri2', {
+      to_email: data.email,
+      to_name: data.fullName,
+      from_name: 'RPL Maker Lab',
+      subject: subject,
+      message: emailContent,
+      equipment_list: data.selectedEquipment.join(', '),
+      selected_dates: data.selectedDates.join(', '),
+      selected_time_slots: data.selectedTimeSlots.join(', '),
+      booking_status: data.status
     });
 
-    console.log('📥 Edge Function Response:', { response, error });
-
-    if (error) {
-      console.error('❌ Supabase Function Error:', error);
-      
-      // If there's a network or connection error, log more details
-      if (error.message?.includes('non-2xx status code')) {
-        console.log('🔍 Checking edge function logs for detailed error...');
-        console.log('📋 Edge function might have internal errors. Check the logs for detailed error information.');
-      }
-      
-      throw new Error(`Edge function error: ${error.message}`);
-    }
-
-    if (!response?.success) {
-      console.error('❌ Email sending failed:', response);
-      throw new Error(response?.error || 'Email sending failed');
-    }
-
-    console.log('✅ Email sent successfully via Edge Function!');
+    console.log('✅ Email sent successfully via frontend EmailJS!');
     console.log('📬 Email details:', {
       recipient: data.email,
       status: data.status,
