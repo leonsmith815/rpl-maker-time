@@ -212,11 +212,12 @@ const handler = async (req: Request): Promise<Response> => {
       templateId 
     });
 
-    // Send email via EmailJS REST API
-    const emailResponse = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+    // Send email via EmailJS REST API with server-side configuration
+    const emailResponse = await fetch('https://api.emailjs.com/api/v1.0/email/send-form', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Deno.env.get('EMAILJS_PRIVATE_KEY')}`,
       },
       body: JSON.stringify({
         service_id: serviceId,
