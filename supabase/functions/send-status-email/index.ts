@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -145,32 +144,30 @@ const handler = async (req: Request): Promise<Response> => {
       customer: data.fullName 
     });
 
-    // Initialize Resend
-    const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-
-    // Format the data for email
-    const dates = data.selectedDates.join(', ');
-    const timeSlots = data.selectedTimeSlots.join(', ');
-    const equipment = data.selectedEquipment.join(', ');
-    
-    const subject = getEmailSubject(data.status);
-    const htmlContent = getEmailContent(data.status, data.fullName, dates, equipment, timeSlots);
-
-    // Send email using Resend
-    const emailResponse = await resend.emails.send({
-      from: "RPL Maker Lab <onboarding@resend.dev>",
-      to: [data.email],
-      subject: subject,
-      html: htmlContent.replace(/\n/g, '<br>'),
+    // Use the send-emailjs-notification function which is properly configured for EmailJS
+    const emailjsResponse = await fetch(`https://ztlmftmpobqfyauayxkj.supabase.co/functions/v1/send-emailjs-notification`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0bG1mdG1wb2JxZnlhdWF5eGtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDczMDEsImV4cCI6MjA3MDA4MzMwMX0.MZ0irP-UkC13UU70hW1u46o56nvOkyVZoutdpWzkAHk`,
+      },
+      body: JSON.stringify(data),
     });
 
-    console.log("✅ Email sent successfully:", emailResponse);
+    if (!emailjsResponse.ok) {
+      const errorText = await emailjsResponse.text();
+      console.error('❌ EmailJS notification failed:', errorText);
+      throw new Error(`EmailJS notification failed: ${emailjsResponse.status} - ${errorText}`);
+    }
+
+    const emailResult = await emailjsResponse.json();
+    console.log('✅ Email sent successfully via EmailJS:', emailResult);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         message: 'Email notification sent successfully',
-        emailResponse: emailResponse 
+        emailResponse: emailResult 
       }),
       { 
         status: 200, 
