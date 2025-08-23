@@ -2,42 +2,16 @@ import { MakerLabForm } from "@/components/maker-lab-form";
 import { HoursCard } from "@/components/hours-card";
 import { EquipmentShowcase } from "@/components/equipment-showcase";
 import { Button } from "@/components/ui/button";
-import { Shield, Mail } from "lucide-react";
+import { Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { testEmailSystem } from "@/services/emailService";
-import { toast } from "sonner";
 
 const Index = () => {
   const navigate = useNavigate();
 
-  const handleTestEmail = async () => {
-    try {
-      toast.info("Testing email system...");
-      const success = await testEmailSystem();
-      if (success) {
-        toast.success("Email test successful! Check console for details.");
-      } else {
-        toast.error("Email test failed. Check console for details.");
-      }
-    } catch (error) {
-      toast.error("Email test failed. Check console for details.");
-      console.error("Email test error:", error);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background">
-      {/* Admin Access and Test Buttons */}
-      <div className="absolute top-4 right-4 z-10 flex gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleTestEmail}
-          className="gap-2 text-muted-foreground hover:text-foreground"
-        >
-          <Mail className="w-4 h-4" />
-          Test Email
-        </Button>
+      {/* Admin Access Button */}
+      <div className="absolute top-4 right-4 z-10">
         <Button
           variant="ghost"
           size="sm"
