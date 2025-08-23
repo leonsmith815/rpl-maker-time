@@ -114,7 +114,7 @@ export const sendStatusUpdateEmail = async (data: BookingEmailData): Promise<voi
     const subject = getEmailSubject(data.status);
 
     // Send email using EmailJS from frontend
-    const response = await window.emailjs.send('service_c5hnxps', 'template_s5pm6ri2', {
+    const response = await window.emailjs.send('service_c5hnxps', 'template_2ss175v', {
       to_email: data.email,
       to_name: data.fullName,
       from_name: 'RPL Maker Lab',
