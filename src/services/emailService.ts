@@ -116,14 +116,14 @@ export const sendStatusUpdateEmail = async (data: BookingEmailData): Promise<voi
     // Send email using EmailJS from frontend
     const response = await window.emailjs.send('service_c5hnxps', 'template_2ss175v', {
       to_email: data.email,
-      to_name: data.fullName,
+      customer_name: data.fullName,
       from_name: 'RPL Maker Lab',
       subject: subject,
-      message: emailContent,
+      message_content: emailContent,
       equipment_list: data.selectedEquipment.join(', '),
       selected_dates: data.selectedDates.join(', '),
       selected_time_slots: data.selectedTimeSlots.join(', '),
-      booking_status: data.status
+      status: data.status
     });
 
     console.log('✅ Email sent successfully via frontend EmailJS!');
