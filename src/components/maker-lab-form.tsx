@@ -16,7 +16,14 @@ declare global {
   }
 }
 import { format } from "date-fns";
-const timeSlots = ["Tuesday 11 AM - 1 PM", "Tuesday 1 PM - 3 PM", "Thursday 11 AM - 1 PM", "Thursday 2 PM - 4 PM", "Friday 11 AM - 1 PM", "Friday 2 PM - 4 PM"];
+const timeSlots = [
+  "Tuesday 11 AM - 1 PM", 
+  "Tuesday 1 PM - 3 PM", 
+  "Thursday 11 AM - 1 PM", 
+  "Thursday 2 PM - 4 PM", 
+  "Friday 11 AM - 1 PM", 
+  "Friday 2 PM - 4 PM"
+];
 const equipment = ["Cricut Make", "Laser Cutter", "3D Printers", "Embroidery Machine", "Sewing Machines", "Brother Serger", "Direct-to-Film (DTF) Printer", "Media Room (Green Screen)", "Recording Studio (Podcast)"];
 export function MakerLabForm() {
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
